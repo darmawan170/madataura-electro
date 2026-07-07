@@ -18,8 +18,9 @@
                 <i class="fa fa-refresh"></i> Perbarui Data
             </button>
             <button onclick="filterSemua()" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition">Semua</button>
-            <button onclick="filterBelumKirim()" class="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600 transition">Belum Dikirim</button>
-            <button onclick="filterSudahKirim()" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition">Sudah Dikirim</button>
+            <button onclick="filterBelumBayar()" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition">Belum Bayar</button>
+            <button onclick="filterSudahBayar()" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition">Sudah Lunas</button>
+            <button onclick="filterSudahKirim()" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">Sudah Dikirim</button>
         </div>
     </div>
 
@@ -34,8 +35,11 @@
     </div>
 
 <script>
+// ✅ Daftar Status Lengkap Termasuk Pembayaran
 const pilihanStatus = [
-    "⏳ Menunggu Konfirmasi",
+    "⏳ Menunggu Pembayaran",
+    "✅ Lunas - Menunggu Konfirmasi",
+    "⏳ Menunggu Konfirmasi Toko (COD)",
     "✅ Pesanan Dikonfirmasi",
     "📦 Sedang Dikemas",
     "🚚 Dikirim via J&T Ekspres",
@@ -49,9 +53,11 @@ function muatData(){
     let pesanan = JSON.parse(localStorage.getItem("riwayatPesanan")) || [];
 
     // Terapkan Filter
-    if(filterAktif==="belum"){
-        pesanan = pesanan.filter(p=>!p.status.includes("Dikirim") && !p.status.includes("Diterima") && !p.status.includes("Dibatalkan"));
-    }else if(filterAktif==="sudah"){
+    if(filterAktif==="belumbayar"){
+        pesanan = pesanan.filter(p=>p.status.includes("Menunggu Pembayaran"));
+    }else if(filterAktif==="sudahbayar"){
+        pesanan = pesanan.filter(p=>p.status.includes("Lunas"));
+    }else if(filterAktif==="sudahkirim"){
         pesanan = pesanan.filter(p=>p.status.includes("Dikirim") || p.status.includes("Diterima"));
     }
 
@@ -69,7 +75,7 @@ function muatData(){
         <thead class="bg-gray-200">
             <tr>
                 <th class="p-2">Tanggal</th><th class="p-2">Pembeli</th><th class="p-2">Total</th><th class="p-2">Metode</th>
-                <th class="p-2">Status</th><th class="p-2">Estimasi Tiba</th><th class="p-2">Ubah Status</th><th class="p-2">Hapus</th>
+                <th class="p-2">Status Pesanan</th><th class="p-2">Estimasi Tiba</th><th class="p-2">Ubah Status</th><th class="p-2">Hapus</th>
             </tr>
         </thead><tbody>
         ${pesanan.length===0 ? `<tr><td colspan="8" class="p-4 text-center text-gray-500">Belum ada pesanan.</td></tr>` : ""}
@@ -79,7 +85,7 @@ function muatData(){
                 <td class="p-2">${ps.pembeli}</td>
                 <td class="p-2 font-bold">Rp ${ps.total.toLocaleString()}</td>
                 <td class="p-2">${ps.metode}</td>
-                <td class="p-2">${ps.status}</td>
+                <td class="p-2 font-medium">${ps.status}</td>
                 <td class="p-2">
                     <input type="date" value="${ps.tglEstimasi||""}" onchange="ubahEstimasi(${i}, this.value)" class="w-full p-1 border rounded">
                 </td>
@@ -99,27 +105,29 @@ function ubahStatus(indeks, status){
     const semua = JSON.parse(localStorage.getItem("riwayatPesanan")) || [];
     semua[indeks].status = status;
     localStorage.setItem("riwayatPesanan", JSON.stringify(semua));
-    alert("✅ Status diperbarui!"); muatData();
+    alert("✅ Status pembayaran & pesanan berhasil diperbarui!"); muatData();
 }
 
 function ubahEstimasi(indeks, tgl){
     const semua = JSON.parse(localStorage.getItem("riwayatPesanan")) || [];
     semua[indeks].estimasiTiba = tgl ? new Date(tgl).toLocaleDateString('id-ID') : "Belum ditentukan";
     localStorage.setItem("riwayatPesanan", JSON.stringify(semua));
-    alert("✅ Estimasi tiba diatur!"); muatData();
+    alert("✅ Estimasi tanggal kedatangan diatur!"); muatData();
 }
 
 function hapusPesanan(indeks){
-    if(!confirm("Yakin hapus pesanan ini?")) return;
+    if(!confirm("Yakin ingin menghapus riwayat pesanan ini?")) return;
     const semua = JSON.parse(localStorage.getItem("riwayatPesanan")) || [];
     semua.splice(indeks,1);
     localStorage.setItem("riwayatPesanan", JSON.stringify(semua));
-    alert("✅ Pesanan dihapus!"); muatData();
+    alert("✅ Pesanan berhasil dihapus!"); muatData();
 }
 
+// Fungsi Filter Baru
 function filterSemua(){ filterAktif="semua"; muatData(); }
-function filterBelumKirim(){ filterAktif="belum"; muatData(); }
-function filterSudahKirim(){ filterAktif="sudah"; muatData(); }
+function filterBelumBayar(){ filterAktif="belumbayar"; muatData(); }
+function filterSudahBayar(){ filterAktif="sudahbayar"; muatData(); }
+function filterSudahKirim(){ filterAktif="sudahkirim"; muatData(); }
 
 muatData();
 setInterval(muatData, 5000);
