@@ -1,136 +1,851 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel Admin - Madataura Electro</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel - Toko</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.2.0/remixicon.min.css">
+<style>
+  * { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+  .sidebar-link.active { background: rgba(59, 130, 246, 0.1); color: #3b82f6; border-left: 3px solid #3b82f6; }
+  .sidebar-link:hover { background: rgba(59, 130, 246, 0.05); }
+  .table-wrapper::-webkit-scrollbar { height: 8px; }
+  .table-wrapper::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .animate-fade { animation: fadeIn 0.3s ease-out; }
+</style>
 </head>
-<body class="bg-gray-100 p-4 md:p-6 max-w-7xl mx-auto">
-    <h1 class="text-2xl font-bold text-center mb-6 bg-blue-700 text-white py-4 rounded-xl shadow-lg">
-        <i class="fa fa-cogs"></i> PANEL PUSAT DATA TOKO MADATAURA ELECTRO
-    </h1>
+<body class="bg-slate-50 text-slate-800">
 
-    <div class="mb-6 flex flex-wrap gap-3 justify-between items-center">
-        <div class="flex gap-2">
-            <button onclick="muatData()" class="bg-blue-500 text-white px-5 py-2 rounded-lg hover:bg-blue-600 transition flex items-center gap-2">
-                <i class="fa fa-refresh"></i> Perbarui Data
-            </button>
-            <button onclick="filterSemua()" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition">Semua</button>
-            <button onclick="filterBelumBayar()" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition">Belum Bayar</button>
-            <button onclick="filterSudahBayar()" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition">Sudah Lunas</button>
-            <button onclick="filterSudahKirim()" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">Sudah Dikirim</button>
+<!-- Login Screen -->
+<div id="loginScreen" class="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-blue-500 to-indigo-600">
+  <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md animate-fade">
+    <div class="text-center mb-8">
+      <div class="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
+        <i class="ri-shield-user-line text-3xl text-blue-600"></i>
+      </div>
+      <h1 class="text-2xl font-bold text-slate-800">Admin Panel</h1>
+      <p class="text-slate-500 text-sm mt-1">Masuk untuk mengelola toko Anda</p>
+    </div>
+    <form id="loginForm" class="space-y-5">
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-2">Password Admin</label>
+        <div class="relative">
+          <input type="password" id="passwordInput" class="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition" placeholder="Masukkan password" required>
+          <i class="ri-lock-line absolute right-3 top-3.5 text-slate-400"></i>
         </div>
-    </div>
+      </div>
+      <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition duration-200 shadow-lg shadow-blue-500/30">
+        <i class="ri-login-box-line mr-2"></i>Masuk Dashboard
+      </button>
+      <p id="loginError" class="text-red-500 text-sm text-center hidden">Password salah. Coba lagi.</p>
+    </form>
+  </div>
+</div>
 
-    <div class="bg-white p-5 rounded-xl shadow mb-6">
-        <h2 class="font-bold text-lg mb-4 border-b pb-2 flex items-center gap-2"><i class="fa fa-users text-blue-600"></i> Data Seluruh Pelanggan</h2>
-        <div id="daftarPelanggan" class="overflow-x-auto"></div>
+<!-- Dashboard -->
+<div id="dashboard" class="hidden min-h-screen">
+  <!-- Sidebar -->
+  <aside id="sidebar" class="fixed left-0 top-0 h-full w-64 bg-white border-r border-slate-200 z-40 transform -translate-x-full lg:translate-x-0 transition-transform duration-300">
+    <div class="p-6 border-b border-slate-200">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+          <i class="ri-store-2-line text-white text-xl"></i>
+        </div>
+        <div>
+          <h2 class="font-bold text-slate-800">Admin Toko</h2>
+          <p class="text-xs text-slate-500">Panel Kontrol</p>
+        </div>
+      </div>
+    <nav class="p-4 space-y-1">
+      <a href="#" data-menu="customer" class="sidebar-link active flex items-center gap-3 px-4 py-3 rounded-lg transition">
+        <i class="ri-group-line text-lg"></i>
+        <span class="font-medium">Data Customer</span>
+      </a>
+      <a href="#" data-menu="pesanan" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg transition">
+        <i class="ri-file-list-3-line text-lg"></i>
+        <span class="font-medium">Data Pesanan</span>
+      </a>
+      <a href="#" data-menu="produk" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg transition">
+        <i class="ri-shopping-bag-3-line text-lg"></i>
+        <span class="font-medium">Kelola Produk</span>
+      </a>
+      <a href="#" data-menu="kategori" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg transition">
+        <i class="ri-price-tag-3-line text-lg"></i>
+        <span class="font-medium">Kelola Kategori</span>
+      </a>
+      <a href="#" data-menu="video" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg transition">
+        <i class="ri-video-line text-lg"></i>
+        <span class="font-medium">Upload Video</span>
+      </a>
+      <a href="#" data-menu="jnt" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg transition">
+        <i class="ri-truck-line text-lg"></i>
+        <span class="font-medium">Setting J&T</span>
+      </a>
+    </nav>
+    <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-slate-200">
+      <button id="logoutBtn" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 transition">
+        <i class="ri-logout-box-line text-lg"></i>
+        <span class="font-medium">Logout</span>
+      </button>
     </div>
+  </aside>
 
-    <div class="bg-white p-5 rounded-xl shadow">
-        <h2 class="font-bold text-lg mb-4 border-b pb-2 flex items-center gap-2"><i class="fa fa-shopping-cart text-orange-600"></i> Daftar Pesanan & Pengaturan</h2>
-        <div id="daftarPesanan" class="overflow-x-auto"></div>
+  <!-- Main Content -->
+  <div class="lg:ml-64">
+    <!-- Topbar -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30">
+      <div class="flex items-center justify-between px-4 lg:px-8 py-4">
+        <button id="menuToggle" class="lg:hidden p-2 hover:bg-slate-100 rounded-lg">
+          <i class="ri-menu-line text-xl"></i>
+        </button>
+        <h1 id="pageTitle" class="text-xl font-bold text-slate-800">Data Customer</h1>
+        <div class="flex items-center gap-2">
+          <div class="w-9 h-9 bg-blue-100 rounded-full flex items-center justify-center">
+            <i class="ri-admin-line text-blue-600"></i>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Content Area -->
+    <main class="p-4 lg:p-8">
+      
+      <!-- A. Data Customer -->
+      <section id="customerSection" class="menu-section animate-fade">
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200">
+          <div class="p-6 border-b border-slate-200">
+            <h2 class="text-lg font-semibold">Daftar Customer</h2>
+            <p class="text-sm text-slate-500 mt-1">Data customer dari localStorage 'toko_users'</p>
+          </div>
+          <div class="table-wrapper overflow-x-auto">
+            <table class="w-full">
+              <thead class="bg-slate-50">
+                <tr class="text-left text-sm font-medium text-slate-600">
+                  <th class="px-6 py-3">No</th>
+                  <th class="px-6 py-3">Nama</th>
+                  <th class="px-6 py-3">Email</th>
+                  <th class="px-6 py-3">No HP</th>
+                  <th class="px-6 py-3">Alamat</th>
+                </tr>
+              </thead>
+              <tbody id="customerTableBody" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+          <div id="customerEmpty" class="p-12 text-center text-slate-500 hidden">
+            <i class="ri-inbox-line text-4xl mb-2"></i>
+            <p>Belum ada data customer</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- B. Data Pesanan -->
+      <section id="pesananSection" class="menu-section hidden animate-fade">
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200">
+          <div class="p-6 border-b border-slate-200">
+            <h2 class="text-lg font-semibold">Daftar Pesanan</h2>
+            <p class="text-sm text-slate-500 mt-1">Kelola status dan resi pengiriman</p>
+          </div>
+          <div class="table-wrapper overflow-x-auto">
+            <table class="w-full">
+              <thead class="bg-slate-50">
+                <tr class="text-left text-sm font-medium text-slate-600">
+                  <th class="px-6 py-3">ID</th>
+                  <th class="px-6 py-3">Customer</th>
+                  <th class="px-6 py-3">Total</th>
+                  <th class="px-6 py-3">Bayar</th>
+                  <th class="px-6 py-3">Status</th>
+                  <th class="px-6 py-3">J&T</th>
+                  <th class="px-6 py-3">Resi</th>
+                  <th class="px-6 py-3">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="pesananTableBody" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+          <div id="pesananEmpty" class="p-12 text-center text-slate-500 hidden">
+            <i class="ri-file-list-line text-4xl mb-2"></i>
+            <p>Belum ada data pesanan</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- C. Kelola Produk -->
+      <section id="produkSection" class="menu-section hidden animate-fade">
+        <div class="grid lg:grid-cols-3 gap-6">
+          <div class="lg:col-span-1">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 sticky top-24">
+              <h3 class="text-lg font-semibold mb-4" id="produkFormTitle">Tambah Produk</h3>
+              <form id="produkForm" class="space-y-4">
+                <input type="hidden" id="produkId">
+                <div>
+                  <label class="block text-sm font-medium mb-1">Nama Produk</label>
+                  <input type="text" id="produkNama" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" required>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium mb-1">Harga</label>
+                  <input type="number" id="produkHarga" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" required>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium mb-1">URL Gambar</label>
+                  <input type="url" id="produkGambar" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" required>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium mb-1">Kategori</label>
+                  <select id="produkKategori" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" required></select>
+                </div>
+                <div class="flex items-center gap-2">
+                  <input type="checkbox" id="produkTerlaris" class="w-4 h-4 text-blue-600 rounded">
+                  <label for="produkTerlaris" class="text-sm">Produk Terlaris</label>
+                </div>
+                <div class="flex gap-2">
+                  <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg transition">
+                    <i class="ri-save-line mr-1"></i>Simpan
+                  </button>
+                  <button type="button" id="produkCancel" class="px-4 bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium py-2.5 rounded-lg transition hidden">
+                    Batal
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+          <div class="lg:col-span-2">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200">
+              <div class="p-6 border-b border-slate-200">
+                <h3 class="text-lg font-semibold">Daftar Produk</h3>
+              </div>
+              <div class="table-wrapper overflow-x-auto">
+                <table class="w-full">
+                  <thead class="bg-slate-50">
+                    <tr class="text-left text-sm font-medium text-slate-600">
+                      <th class="px-6 py-3">Gambar</th>
+                      <th class="px-6 py-3">Nama</th>
+                      <th class="px-6 py-3">Harga</th>
+                      <th class="px-6 py-3">Kategori</th>
+                      <th class="px-6 py-3">Terlaris</th>
+                      <th class="px-6 py-3">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody id="produkTableBody" class="divide-y divide-slate-100"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- D. Kelola Kategori -->
+      <section id="kategoriSection" class="menu-section hidden animate-fade">
+        <div class="grid lg:grid-cols-3 gap-6">
+          <div class="lg:col-span-1">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+              <h3 class="text-lg font-semibold mb-4">Tambah Kategori</h3>
+              <form id="kategoriForm" class="space-y-4">
+                <div>
+                  <label class="block text-sm font-medium mb-1">Nama Kategori</label>
+                  <input type="text" id="kategoriNama" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" required>
+                </div>
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg transition">
+                  <i class="ri-add-line mr-1"></i>Tambah
+                </button>
+              </form>
+            </div>
+          </div>
+          <div class="lg:col-span-2">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200">
+              <div class="p-6 border-b border-slate-200">
+                <h3 class="text-lg font-semibold">Daftar Kategori</h3>
+              </div>
+              <div id="kategoriList" class="p-6 space-y-2"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- E. Upload Video -->
+      <section id="videoSection" class="menu-section hidden animate-fade">
+        <div class="grid lg:grid-cols-3 gap-6">
+          <div class="lg:col-span-1">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+              <h3 class="text-lg font-semibold mb-4" id="videoFormTitle">Tambah Video</h3>
+              <form id="videoForm" class="space-y-4">
+                <input type="hidden" id="videoId">
+                <div>
+                  <label class="block text-sm font-medium mb-1">Judul Video</label>
+                  <input type="text" id="videoJudul" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" required>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium mb-1">Link YouTube/Embed</label>
+                  <input type="url" id="videoLink" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="https://youtube.com/embed/..." required>
+                </div>
+                <div class="flex gap-2">
+                  <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg transition">
+                    <i class="ri-save-line mr-1"></i>Simpan
+                  </button>
+                  <button type="button" id="videoCancel" class="px-4 bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium py-2.5 rounded-lg transition hidden">
+                    Batal
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+          <div class="lg:col-span-2">
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200">
+              <div class="p-6 border-b border-slate-200">
+                <h3 class="text-lg font-semibold">Daftar Video</h3>
+              </div>
+              <div id="videoList" class="p-6 space-y-4"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- F. Setting J&T -->
+      <section id="jntSection" class="menu-section hidden animate-fade">
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+          <h3 class="text-lg font-semibold mb-6">Pengaturan Ongkir J&T</h3>
+          <form id="jntForm" class="space-y-6 max-w-2xl">
+            <div id="jntLayananList" class="space-y-4"></div>
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2.5 rounded-lg transition">
+              <i class="ri-save-line mr-1"></i>Simpan Pengaturan
+            </button>
+          </form>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- Modal Update Pesanan -->
+<div id="pesananModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+  <div class="bg-white rounded-xl shadow-2xl w-full max-w-md animate-fade">
+    <div class="p-6 border-b border-slate-200">
+      <h3 class="text-lg font-semibold">Update Pesanan</h3>
     </div>
+    <form id="pesananUpdateForm" class="p-6 space-y-4">
+      <input type="hidden" id="pesananUpdateId">
+      <div>
+        <label class="block text-sm font-medium mb-1">Status Pesanan</label>
+        <select id="pesananStatus" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+          <option value="Dikemas">Dikemas</option>
+          <option value="Dikirim">Dikirim</option>
+          <option value="Selesai">Selesai</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1">Nomor Resi J&T</label>
+        <input type="text" id="pesananResi" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="JT1234567890">
+      </div>
+      <div class="flex gap-2 pt-2">
+        <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg transition">
+          Update
+        </button>
+        <button type="button" id="pesananModalClose" class="px-6 bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium py-2.5 rounded-lg transition">
+          Batal
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Toast Notification -->
+<div id="toast" class="fixed bottom-4 right-4 bg-slate-800 text-white px-6 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 z-50">
+  <div class="flex items-center gap-2">
+    <i id="toastIcon" class="ri-checkbox-circle-line"></i>
+    <span id="toastMessage"></span>
+  </div>
+</div>
 
 <script>
-// ✅ Daftar Status Lengkap Termasuk Pembayaran
-const pilihanStatus = [
-    "⏳ Menunggu Pembayaran",
-    "✅ Lunas - Menunggu Konfirmasi",
-    "⏳ Menunggu Konfirmasi Toko (COD)",
-    "✅ Pesanan Dikonfirmasi",
-    "📦 Sedang Dikemas",
-    "🚚 Dikirim via J&T Ekspres",
-    "📫 Sudah Diterima",
-    "❌ Dibatalkan"
-];
-let filterAktif = "semua";
+const ADMIN_PASSWORD = 'admin123';
 
-function muatData(){
-    const pengguna = JSON.parse(localStorage.getItem("dataPengguna")) || [];
-    let pesanan = JSON.parse(localStorage.getItem("riwayatPesanan")) || [];
+// Init Dummy Data
+function initDummyData() {
+  if (!localStorage.getItem('toko_kategori')) {
+    const kategori = [
+      { id: 1, nama: 'Fashion Pria' },
+      { id: 2, nama: 'Fashion Wanita' },
+      { id: 3, nama: 'Aksesoris' }
+    ];
+    localStorage.setItem('toko_kategori', JSON.stringify(kategori));
+  }
 
-    // Terapkan Filter
-    if(filterAktif==="belumbayar"){
-        pesanan = pesanan.filter(p=>p.status.includes("Menunggu Pembayaran"));
-    }else if(filterAktif==="sudahbayar"){
-        pesanan = pesanan.filter(p=>p.status.includes("Lunas"));
-    }else if(filterAktif==="sudahkirim"){
-        pesanan = pesanan.filter(p=>p.status.includes("Dikirim") || p.status.includes("Diterima"));
+  if (!localStorage.getItem('toko_produk')) {
+    const produk = [
+      { id: 1, nama: 'Kemeja Flanel Premium', harga: 189000, gambar: 'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=400', kategori: 'Fashion Pria', terlaris: true },
+      { id: 2, nama: 'Dress Casual Elegant', harga: 249000, gambar: 'https://images.unsplash.com/photo-1595777457580-95e949958bbd?w=400', kategori: 'Fashion Wanita', terlaris: true },
+      { id: 3, nama: 'Kaos Polos Cotton', harga: 79000, gambar: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400', kategori: 'Fashion Pria', terlaris: false },
+      { id: 4, nama: 'Tas Selempang Kulit', harga: 329000, gambar: 'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=400', kategori: 'Aksesoris', terlaris: true },
+      { id: 5, nama: 'Jaket Denim Classic', harga: 299000, gambar: 'https://images.unsplash.com/photo-1544022613-e87ca75a784a?w=400', kategori: 'Fashion Pria', terlaris: false },
+      { id: 6, nama: 'Blouse Motif Bunga', harga: 159000, gambar: 'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=400', kategori: 'Fashion Wanita', terlaris: false },
+      { id: 7, nama: 'Dompet Kulit Asli', harga: 199000, gambar: 'https://images.unsplash.com/photo-1627123424574-724758594e93?w=400', kategori: 'Aksesoris', terlaris: false },
+      { id: 8, nama: 'Celana Chino Slimfit', harga: 219000, gambar: 'https://images.unsplash.com/photo-1473966968600-fa801b869a1a?w=400', kategori: 'Fashion Pria', terlaris: true }
+    ];
+    localStorage.setItem('toko_produk', JSON.stringify(produk));
+  }
+
+  if (!localStorage.getItem('toko_video')) {
+    const video = [
+      { id: 1, judul: 'Tutorial Mix & Match Outfit', link: 'https://www.youtube.com/embed/dQw4w9WgXcQ' },
+      { id: 2, judul: 'Review Produk Terbaru 2024', link: 'https://www.youtube.com/embed/dQw4w9WgXcQ' }
+    ];
+    localStorage.setItem('toko_video', JSON.stringify(video));
+  }
+
+  if (!localStorage.getItem('toko_ongkir')) {
+    const ongkir = [
+      { id: 1, nama: 'J&T ECO', harga: 10000 },
+      { id: 2, nama: 'J&T REG', harga: 15000 },
+      { id: 3, nama: 'J&T YES', harga: 25000 }
+    ];
+    localStorage.setItem('toko_ongkir', JSON.stringify(ongkir));
+  }
+
+  if (!localStorage.getItem('toko_users')) {
+    localStorage.setItem('toko_users', JSON.stringify([]));
+  }
+
+  if (!localStorage.getItem('toko_pesanan')) {
+    localStorage.setItem('toko_pesanan', JSON.stringify([]));
+  }
+}
+
+// Helper Functions
+function getData(key) {
+  return JSON.parse(localStorage.getItem(key) || '[]');
+}
+
+function setData(key, data) {
+  localStorage.setItem(key, JSON.stringify(data));
+  showToast('Data berhasil disimpan', 'success');
+}
+
+function showToast(msg, type = 'success') {
+  const toast = document.getElementById('toast');
+  const icon = document.getElementById('toastIcon');
+  document.getElementById('toastMessage').textContent = msg;
+  icon.className = type === 'success' ? 'ri-checkbox-circle-line' : 'ri-error-warning-line';
+  toast.classList.remove('translate-y-20', 'opacity-0');
+  setTimeout(() => toast.classList.add('translate-y-20', 'opacity-0'), 3000);
+}
+
+function formatRupiah(num) {
+  return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
+}
+
+// Login Logic
+function checkLogin() {
+  if (sessionStorage.getItem('admin_login') === 'true') {
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('dashboard').classList.remove('hidden');
+    initData();
+  }
+}
+
+document.getElementById('loginForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const pass = document.getElementById('passwordInput').value;
+  if (pass === ADMIN_PASSWORD) {
+    sessionStorage.setItem('admin_login', 'true');
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('dashboard').classList.remove('hidden');
+    initData();
+  } else {
+    document.getElementById('loginError').classList.remove('hidden');
+    setTimeout(() => document.getElementById('loginError').classList.add('hidden'), 3000);
+  }
+});
+
+document.getElementById('logoutBtn').addEventListener('click', () => {
+  sessionStorage.removeItem('admin_login');
+  location.reload();
+});
+
+// Sidebar Menu
+document.querySelectorAll('.sidebar-link').forEach(link => {
+  link.addEventListener('click', (e) => {
+    e.preventDefault();
+    const menu = link.dataset.menu;
+    
+    document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+    link.classList.add('active');
+    
+    document.querySelectorAll('.menu-section').forEach(s => s.classList.add('hidden'));
+    document.getElementById(menu + 'Section').classList.remove('hidden');
+    
+    const titles = {
+      customer: 'Data Customer',
+      pesanan: 'Data Pesanan',
+      produk: 'Kelola Produk',
+      kategori: 'Kelola Kategori',
+      video: 'Upload Video',
+      jnt: 'Setting J&T'
+    };
+    document.getElementById('pageTitle').textContent = titles[menu];
+    
+    if (window.innerWidth < 1024) {
+      document.getElementById('sidebar').classList.add('-translate-x-full');
     }
+  });
+});
 
-    daftarPelanggan.innerHTML = `
-    <table class="w-full text-sm text-left">
-        <thead class="bg-gray-200">
-            <tr><th class="p-3">Nama</th><th class="p-3">Email</th><th class="p-3">No. HP</th><th class="p-3">Alamat</th></tr>
-        </thead><tbody>
-        ${pengguna.length===0 ? `<tr><td colspan="4" class="p-4 text-center text-gray-500">Belum ada pelanggan.</td></tr>` : ""}
-        ${pengguna.map(p=>`<tr class="border-b"><td class="p-3">${p.nama||"-"}</td><td class="p-3">${p.email}</td><td class="p-3">${p.hp||"-"}</td><td class="p-3 max-w-xs truncate">${p.alamat||"-"}</td></tr>`).join("")}
-        </tbody></table>`;
+document.getElementById('menuToggle').addEventListener('click', () => {
+  document.getElementById('sidebar').classList.toggle('-translate-x-full');
+});
 
-    daftarPesanan.innerHTML = `
-    <table class="w-full text-xs md:text-sm text-left">
-        <thead class="bg-gray-200">
-            <tr>
-                <th class="p-2">Tanggal</th><th class="p-2">Pembeli</th><th class="p-2">Total</th><th class="p-2">Metode</th>
-                <th class="p-2">Status Pesanan</th><th class="p-2">Estimasi Tiba</th><th class="p-2">Ubah Status</th><th class="p-2">Hapus</th>
-            </tr>
-        </thead><tbody>
-        ${pesanan.length===0 ? `<tr><td colspan="8" class="p-4 text-center text-gray-500">Belum ada pesanan.</td></tr>` : ""}
-        ${pesanan.map((ps, i)=>`
-            <tr class="border-b">
-                <td class="p-2">${ps.tanggal}</td>
-                <td class="p-2">${ps.pembeli}</td>
-                <td class="p-2 font-bold">Rp ${ps.total.toLocaleString()}</td>
-                <td class="p-2">${ps.metode}</td>
-                <td class="p-2 font-medium">${ps.status}</td>
-                <td class="p-2">
-                    <input type="date" value="${ps.tglEstimasi||""}" onchange="ubahEstimasi(${i}, this.value)" class="w-full p-1 border rounded">
-                </td>
-                <td class="p-2">
-                    <select onchange="ubahStatus(${i}, this.value)" class="w-full p-1 border rounded">
-                        ${pilihanStatus.map(s=>`<option value="${s}" ${ps.status===s?"selected":""}>${s}</option>`).join("")}
-                    </select>
-                </td>
-                <td class="p-2">
-                    <button onclick="hapusPesanan(${i})" class="bg-red-500 text-white px-2 py-1 rounded text-xs">Hapus</button>
-                </td>
-            </tr>`).join("")}
-        </tbody></table>`;
+// A. Data Customer
+function loadCustomer() {
+  const customers = getData('toko_users');
+  const tbody = document.getElementById('customerTableBody');
+  const empty = document.getElementById('customerEmpty');
+  
+  if (customers.length === 0) {
+    tbody.innerHTML = '';
+    empty.classList.remove('hidden');
+    return;
+  }
+  
+  empty.classList.add('hidden');
+  tbody.innerHTML = customers.map((c, i) => `
+    <tr class="text-sm">
+      <td class="px-6 py-4">${i + 1}</td>
+      <td class="px-6 py-4 font-medium">${c.nama || '-'}</td>
+      <td class="px-6 py-4">${c.email || '-'}</td>
+      <td class="px-6 py-4">${c.noHp || c.hp || '-'}</td>
+      <td class="px-6 py-4">${c.alamat || '-'}</td>
+    </tr>
+  `).join('');
 }
 
-function ubahStatus(indeks, status){
-    const semua = JSON.parse(localStorage.getItem("riwayatPesanan")) || [];
-    semua[indeks].status = status;
-    localStorage.setItem("riwayatPesanan", JSON.stringify(semua));
-    alert("✅ Status pembayaran & pesanan berhasil diperbarui!"); muatData();
+// B. Data Pesanan
+function loadPesanan() {
+  const pesanan = getData('toko_pesanan');
+  const tbody = document.getElementById('pesananTableBody');
+  const empty = document.getElementById('pesananEmpty');
+  
+  if (pesanan.length === 0) {
+    tbody.innerHTML = '';
+    empty.classList.remove('hidden');
+    return;
+  }
+  
+  empty.classList.add('hidden');
+  tbody.innerHTML = pesanan.map(p => {
+    const statusColor = {
+      'Dikemas': 'bg-yellow-100 text-yellow-700',
+      'Dikirim': 'bg-blue-100 text-blue-700',
+      'Selesai': 'bg-green-100 text-green-700'
+    };
+    return `
+      <tr class="text-sm">
+        <td class="px-6 py-4">#${p.id}</td>
+        <td class="px-6 py-4 font-medium">${p.nama_customer || p.nama || '-'}</td>
+        <td class="px-6 py-4">${formatRupiah(p.total || 0)}</td>
+        <td class="px-6 py-4">${p.metode_bayar || '-'}</td>
+        <td class="px-6 py-4">
+          <span class="px-2 py-1 rounded text-xs font-medium ${statusColor[p.status_bayar || p.status] || 'bg-slate-100'}">
+            ${p.status_bayar || p.status || 'Pending'}
+          </span>
+        </td>
+        <td class="px-6 py-4">${p.layanan_jnt || p.layananJnt || '-'}</td>
+        <td class="px-6 py-4">${p.resi || '-'}</td>
+        <td class="px-6 py-4">
+          <button onclick="openPesananModal(${p.id})" class="text-blue-600 hover:text-blue-800 font-medium">
+            <i class="ri-edit-line"></i> Update
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join('');
 }
 
-function ubahEstimasi(indeks, tgl){
-    const semua = JSON.parse(localStorage.getItem("riwayatPesanan")) || [];
-    semua[indeks].estimasiTiba = tgl ? new Date(tgl).toLocaleDateString('id-ID') : "Belum ditentukan";
-    localStorage.setItem("riwayatPesanan", JSON.stringify(semua));
-    alert("✅ Estimasi tanggal kedatangan diatur!"); muatData();
+function openPesananModal(id) {
+  const pesanan = getData('toko_pesanan');
+  const item = pesanan.find(p => p.id === id);
+  if (!item) return;
+  
+  document.getElementById('pesananUpdateId').value = id;
+  document.getElementById('pesananStatus').value = item.status_bayar || item.status || 'Dikemas';
+  document.getElementById('pesananResi').value = item.resi || '';
+  document.getElementById('pesananModal').classList.remove('hidden');
 }
 
-function hapusPesanan(indeks){
-    if(!confirm("Yakin ingin menghapus riwayat pesanan ini?")) return;
-    const semua = JSON.parse(localStorage.getItem("riwayatPesanan")) || [];
-    semua.splice(indeks,1);
-    localStorage.setItem("riwayatPesanan", JSON.stringify(semua));
-    alert("✅ Pesanan berhasil dihapus!"); muatData();
+document.getElementById('pesananModalClose').addEventListener('click', () => {
+  document.getElementById('pesananModal').classList.add('hidden');
+});
+
+document.getElementById('pesananUpdateForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const id = parseInt(document.getElementById('pesananUpdateId').value);
+  const status = document.getElementById('pesananStatus').value;
+  const resi = document.getElementById('pesananResi').value;
+  
+  let pesanan = getData('toko_pesanan');
+  pesanan = pesanan.map(p => p.id === id ? { ...p, status_bayar: status, status: status, resi: resi } : p);
+  setData('toko_pesanan', pesanan);
+  
+  document.getElementById('pesananModal').classList.add('hidden');
+  loadPesanan();
+});
+
+// C. Kelola Produk
+function loadProduk() {
+  const produk = getData('toko_produk');
+  const kategori = getData('toko_kategori');
+  const tbody = document.getElementById('produkTableBody');
+  const kategoriSelect = document.getElementById('produkKategori');
+  
+  kategoriSelect.innerHTML = kategori.map(k => `<option value="${k.nama}">${k.nama}</option>`).join('');
+  
+  tbody.innerHTML = produk.map(p => `
+    <tr class="text-sm">
+      <td class="px-6 py-4">
+        <img src="${p.gambar}" alt="${p.nama}" class="w-12 h-12 object-cover rounded" onerror="this.src='https://via.placeholder.com/48'">
+      </td>
+      <td class="px-6 py-4 font-medium">${p.nama}</td>
+      <td class="px-6 py-4">${formatRupiah(p.harga)}</td>
+      <td class="px-6 py-4">${p.kategori}</td>
+      <td class="px-6 py-4">
+        ${p.terlaris ? '<span class="px-2 py-1 bg-orange-100 text-orange-700 rounded text-xs font-medium">Ya</span>' : '-'}
+      </td>
+      <td class="px-6 py-4">
+        <div class="flex gap-2">
+          <button onclick="editProduk(${p.id})" class="text-blue-600 hover:text-blue-800">
+            <i class="ri-edit-line"></i>
+          </button>
+          <button onclick="deleteProduk(${p.id})" class="text-red-600 hover:text-red-800">
+            <i class="ri-delete-bin-line"></i>
+          </button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
 }
 
-// Fungsi Filter Baru
-function filterSemua(){ filterAktif="semua"; muatData(); }
-function filterBelumBayar(){ filterAktif="belumbayar"; muatData(); }
-function filterSudahBayar(){ filterAktif="sudahbayar"; muatData(); }
-function filterSudahKirim(){ filterAktif="sudahkirim"; muatData(); }
+document.getElementById('produkForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const id = document.getElementById('produkId').value;
+  const data = {
+    nama: document.getElementById('produkNama').value,
+    harga: parseInt(document.getElementById('produkHarga').value),
+    gambar: document.getElementById('produkGambar').value,
+    kategori: document.getElementById('produkKategori').value,
+    terlaris: document.getElementById('produkTerlaris').checked
+  };
+  
+  let produk = getData('toko_produk');
+  if (id) {
+    produk = produk.map(p => p.id === parseInt(id) ? { ...p, ...data } : p);
+  } else {
+    data.id = Date.now();
+    produk.push(data);
+  }
+  
+  setData('toko_produk', produk);
+  resetProdukForm();
+  loadProduk();
+});
 
-muatData();
-setInterval(muatData, 5000);
+function editProduk(id) {
+  const produk = getData('toko_produk').find(p => p.id === id);
+  document.getElementById('produkId').value = produk.id;
+  document.getElementById('produkNama').value = produk.nama;
+  document.getElementById('produkHarga').value = produk.harga;
+  document.getElementById('produkGambar').value = produk.gambar;
+  document.getElementById('produkKategori').value = produk.kategori;
+  document.getElementById('produkTerlaris').checked = produk.terlaris;
+  document.getElementById('produkFormTitle').textContent = 'Edit Produk';
+  document.getElementById('produkCancel').classList.remove('hidden');
+}
+
+function deleteProduk(id) {
+  if (!confirm('Hapus produk ini?')) return;
+  let produk = getData('toko_produk').filter(p => p.id !== id);
+  setData('toko_produk', produk);
+  loadProduk();
+}
+
+function resetProdukForm() {
+  document.getElementById('produkForm').reset();
+  document.getElementById('produkId').value = '';
+  document.getElementById('produkFormTitle').textContent = 'Tambah Produk';
+  document.getElementById('produkCancel').classList.add('hidden');
+}
+
+document.getElementById('produkCancel').addEventListener('click', resetProdukForm);
+
+// D. Kelola Kategori
+function loadKategori() {
+  const kategori = getData('toko_kategori');
+  const list = document.getElementById('kategoriList');
+  
+  if (kategori.length === 0) {
+    list.innerHTML = '<p class="text-slate-500 text-sm">Belum ada kategori</p>';
+    return;
+  }
+  
+  list.innerHTML = kategori.map(k => `
+    <div class="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
+      <span class="font-medium">${k.nama}</span>
+      <button onclick="deleteKategori(${k.id})" class="text-red-600 hover:text-red-800">
+        <i class="ri-delete-bin-line"></i>
+      </button>
+    </div>
+  `).join('');
+}
+
+document.getElementById('kategoriForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const nama = document.getElementById('kategoriNama').value.trim();
+  if (!nama) return;
+  
+  let kategori = getData('toko_kategori');
+  kategori.push({ id: Date.now(), nama });
+  setData('toko_kategori', kategori);
+  
+  document.getElementById('kategoriForm').reset();
+  loadKategori();
+  loadProduk();
+});
+
+function deleteKategori(id) {
+  if (!confirm('Hapus kategori ini?')) return;
+  let kategori = getData('toko_kategori').filter(k => k.id !== id);
+  setData('toko_kategori', kategori);
+  loadKategori();
+  loadProduk();
+}
+
+// E. Upload Video
+function loadVideo() {
+  const video = getData('toko_video');
+  const list = document.getElementById('videoList');
+  
+  if (video.length === 0) {
+    list.innerHTML = '<p class="text-slate-500 text-sm">Belum ada video</p>';
+    return;
+  }
+  
+  list.innerHTML = video.map(v => `
+    <div class="p-4 bg-slate-50 rounded-lg">
+      <div class="flex items-start justify-between gap-4 mb-3">
+        <div class="flex-1">
+          <h4 class="font-medium">${v.judul}</h4>
+          <p class="text-sm text-slate-500 mt-1 truncate">${v.link}</p>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="editVideo(${v.id})" class="text-blue-600 hover:text-blue-800">
+            <i class="ri-edit-line"></i>
+          </button>
+          <button onclick="deleteVideo(${v.id})" class="text-red-600 hover:text-red-800">
+            <i class="ri-delete-bin-line"></i>
+          </button>
+        </div>
+      </div>
+      <div class="aspect-video bg-slate-200 rounded overflow-hidden">
+        <iframe src="${v.link}" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
+      </div>
+    </div>
+  `).join('');
+}
+
+document.getElementById('videoForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const id = document.getElementById('videoId').value;
+  const data = {
+    judul: document.getElementById('videoJudul').value,
+    link: document.getElementById('videoLink').value
+  };
+  
+  let video = getData('toko_video');
+  if (id) {
+    video = video.map(v => v.id === parseInt(id) ? { ...v, ...data } : v);
+  } else {
+    data.id = Date.now();
+    video.push(data);
+  }
+  
+  setData('toko_video', video);
+  resetVideoForm();
+  loadVideo();
+});
+
+function editVideo(id) {
+  const video = getData('toko_video').find(v => v.id === id);
+  document.getElementById('videoId').value = video.id;
+  document.getElementById('videoJudul').value = video.judul;
+  document.getElementById('videoLink').value = video.link;
+  document.getElementById('videoFormTitle').textContent = 'Edit Video';
+  document.getElementById('videoCancel').classList.remove('hidden');
+}
+
+function deleteVideo(id) {
+  if (!confirm('Hapus video ini?')) return;
+  let video = getData('toko_video').filter(v => v.id !== id);
+  setData('toko_video', video);
+  loadVideo();
+}
+
+function resetVideoForm() {
+  document.getElementById('videoForm').reset();
+  document.getElementById('videoId').value = '';
+  document.getElementById('videoFormTitle').textContent = 'Tambah Video';
+  document.getElementById('videoCancel').classList.add('hidden');
+}
+
+document.getElementById('videoCancel').addEventListener('click', resetVideoForm);
+
+// F. Setting J&T
+function loadJnt() {
+  const ongkir = getData('toko_ongkir');
+  const list = document.getElementById('jntLayananList');
+  
+  list.innerHTML = ongkir.map((o, i) => `
+    <div class="p-4 bg-slate-50 rounded-lg">
+      <label class="block text-sm font-medium mb-2">${o.nama}</label>
+      <div class="flex items-center gap-2">
+        <span class="text-slate-500">Rp</span>
+        <input type="number" data-id="${o.id}" value="${o.harga}" class="jnt-harga flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" required>
+      </div>
+    </div>
+  `).join('');
+}
+
+document.getElementById('jntForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const inputs = document.querySelectorAll('.jnt-harga');
+  let ongkir = getData('toko_ongkir');
+  
+  ongkir = ongkir.map(o => {
+    const input = Array.from(inputs).find(inp => parseInt(inp.dataset.id) === o.id);
+    return input ? { ...o, harga: parseInt(input.value) } : o;
+  });
+  
+  setData('toko_ongkir', ongkir);
+});
+
+function initData() {
+  initDummyData();
+  loadCustomer();
+  loadPesanan();
+  loadProduk();
+  loadKategori();
+  loadVideo();
+  loadJnt();
+}
+
+// Storage event untuk sync real-time dengan index.html
+window.addEventListener('storage', (e) => {
+  if (e.key && e.key.startsWith('toko_')) {
+    initData();
+  }
+});
+
+checkLogin();
 </script>
+
+<script>(function(){document.addEventListener("click",function(e){var a=e.target.closest("[data-product-id]");if(!a)return;e.preventDefault();var pid=a.getAttribute("data-product-id");if(pid)parent.postMessage({type:"ecto-artifact-link-click",productId:pid},"*")})})();</script>
 </body>
 </html>
