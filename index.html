@@ -21,7 +21,6 @@
             <button class="tab-btn px-4 py-2 w-1/2 font-medium" onclick="switchTab('daftar')">Daftar</button>
         </div>
 
-        <!-- Form Masuk -->
         <div id="formLogin">
             <div class="mb-4">
                 <label class="font-medium text-gray-700">Email</label>
@@ -34,7 +33,6 @@
             <button onclick="login()" class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition">Masuk</button>
         </div>
 
-        <!-- Form Daftar -->
         <div id="formDaftar" class="hidden">
             <div class="mb-4">
                 <label class="font-medium text-gray-700">Nama Lengkap</label>
@@ -53,46 +51,31 @@
     </div>
 </div>
 
-<!-- Halaman Utama (Setelah Login) -->
 <div id="mainApp" class="hidden">
-    <!-- Navbar -->
     <nav class="bg-blue-700 text-white fixed w-full top-0 z-50 shadow-lg">
         <div class="flex justify-around py-3">
-            <a href="#" class="nav-link active flex flex-col items-center text-sm" data-target="beranda">
-                <i class="fa fa-home text-lg"></i> Beranda
-            </a>
-            <a href="#" class="nav-link flex flex-col items-center text-sm" data-target="video">
-                <i class="fa fa-video-camera text-lg"></i> Video
-            </a>
-            <a href="#" class="nav-link flex flex-col items-center text-sm" data-target="akun">
-                <i class="fa fa-user text-lg"></i> Saya
-            </a>
+            <a href="#" class="nav-link active flex flex-col items-center text-sm" data-target="beranda"><i class="fa fa-home text-lg"></i> Beranda</a>
+            <a href="#" class="nav-link flex flex-col items-center text-sm" data-target="video"><i class="fa fa-video-camera text-lg"></i> Video</a>
+            <a href="#" class="nav-link flex flex-col items-center text-sm" data-target="akun"><i class="fa fa-user text-lg"></i> Saya</a>
         </div>
     </nav>
 
-    <!-- Konten Utama -->
     <main class="pt-20 pb-24 px-4 max-w-6xl mx-auto">
 
-        <!-- Halaman Beranda -->
         <section id="beranda" class="page-content">
             <div class="flex gap-3 mb-6 overflow-x-auto pb-2">
                 <button class="beranda-tab active px-4 py-2 bg-blue-600 text-white rounded-full whitespace-nowrap text-sm font-medium" data-target="semuaProduk">Semua Produk</button>
                 <button class="beranda-tab px-4 py-2 bg-gray-200 rounded-full whitespace-nowrap text-sm font-medium" data-target="terlaris">Terlaris</button>
                 <button class="beranda-tab px-4 py-2 bg-gray-200 rounded-full whitespace-nowrap text-sm font-medium" data-target="kategori">Kategori</button>
             </div>
-
-            <!-- Semua Produk -->
             <div id="semuaProduk" class="grid grid-cols-2 md:grid-cols-3 gap-4"></div>
-            <!-- Terlaris -->
             <div id="terlaris" class="hidden grid grid-cols-2 md:grid-cols-3 gap-4"></div>
-            <!-- Kategori -->
             <div id="kategori" class="hidden">
                 <div class="flex flex-wrap gap-3 mb-6" id="daftarKategori"></div>
                 <div id="produkKategori" class="grid grid-cols-2 md:grid-cols-3 gap-4"></div>
             </div>
         </section>
 
-        <!-- Halaman Video -->
         <section id="video" class="page-content hidden">
             <h2 class="text-xl font-bold mb-4">Video Produk & Tutorial</h2>
             <div class="mb-4 p-4 bg-white rounded-xl shadow">
@@ -103,7 +86,6 @@
             <div id="kontenVideo" class="space-y-4"></div>
         </section>
 
-        <!-- Halaman Akun / Pengaturan -->
         <section id="akun" class="page-content hidden">
             <div class="bg-white p-6 rounded-xl shadow">
                 <h2 class="text-xl font-bold mb-5 flex items-center gap-2"><i class="fa fa-user-circle"></i> Profil Saya</h2>
@@ -133,7 +115,6 @@
             </div>
         </section>
 
-        <!-- Halaman Pembayaran / Checkout -->
         <section id="checkoutPage" class="page-content hidden">
             <div class="bg-white p-6 rounded-xl shadow max-w-xl mx-auto">
                 <h2 class="text-xl font-bold mb-5 flex items-center gap-2"><i class="fa fa-shopping-cart"></i> Pembayaran & Pengiriman</h2>
@@ -153,11 +134,22 @@
                     <p class="text-2xl font-bold text-green-700" id="totalBayar">Rp 0</p>
                 </div>
 
-                <div class="mb-6">
+                <div class="mb-4">
                     <label class="font-medium text-gray-700 block mb-2">Metode Pembayaran:</label>
-                    <select id="metodeBayar" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                    <select id="metodeBayar" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" onchange="tampilkanEwallet()">
+                        <option value="">-- Pilih Metode --</option>
                         <option value="cod">Bayar di Tempat (COD)</option>
-                        <option value="ewallet">Dompet Digital (QRIS/OVO/DANA/Gopay)</option>
+                        <option value="ewallet">Dompet Digital</option>
+                    </select>
+                </div>
+
+                <div id="pilihEwallet" class="hidden mb-6">
+                    <label class="font-medium text-gray-700 block mb-2">Pilih Dompet Digital:</label>
+                    <select id="jenisEwallet" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+                        <option value="">-- Pilih --</option>
+                        <option value="dana">DANA</option>
+                        <option value="ovo">OVO</option>
+                        <option value="gopay">GoPay</option>
                     </select>
                 </div>
 
@@ -168,7 +160,6 @@
 </div>
 
 <script>
-// === DATA AWAL ===
 let penggunaAktif = null;
 let dataPengguna = JSON.parse(localStorage.getItem("dataPengguna")) || [];
 let dataProduk = [
@@ -182,7 +173,13 @@ let dataProduk = [
 let daftarVideo = JSON.parse(localStorage.getItem("daftarVideo")) || [];
 let riwayatPesanan = JSON.parse(localStorage.getItem("riwayatPesanan")) || [];
 
-// === 🔴 FITUR TETAP LOGIN OTOMATIS ===
+// Link Pembayaran
+const linkBayar = {
+    dana: "https://link.dana.id/minta?full_url=https://qr.dana.id/v1/281012012023040947754925",
+    ovo: "#",
+    gopay: "#"
+};
+
 window.onload = function(){
     const akunTersimpan = localStorage.getItem("penggunaAktif");
     if(akunTersimpan){
@@ -192,7 +189,6 @@ window.onload = function(){
     }
 };
 
-// === NAVIGASI ===
 function switchTab(jenis){
     document.querySelectorAll(".tab-btn").forEach(el=>el.classList.remove("active","text-blue-600","border-b-2","border-blue-600"));
     event.target.classList.add("active","text-blue-600","border-b-2","border-blue-600");
@@ -219,7 +215,6 @@ document.querySelectorAll(".beranda-tab").forEach(btn=>{
     });
 });
 
-// === FUNGSI AKUN ===
 function daftar(){
     const data = {nama:regNama.value.trim(), email:regEmail.value.trim(), sandi:regPass.value, hp:"", tglLahir:"", alamat:""};
     if(!data.nama||!data.email||!data.sandi) return alert("Lengkapi semua data terlebih dahulu!");
@@ -255,7 +250,6 @@ function simpanProfil(){
     simpanData(); alert("✅ Profil berhasil diperbarui!");
 }
 
-// === PRODUK & KATEGORI ===
 function muatProduk(){
     const tampil = (arr,idTujuan)=>{
         idTujuan.innerHTML = "";
@@ -292,7 +286,6 @@ function muatKategori(){
     });
 }
 
-// === VIDEO ===
 function tambahVideo(){
     const link = linkVideo.value.trim();
     if(!link) return alert("Masukkan tautan video terlebih dahulu!");
@@ -310,31 +303,60 @@ function muatVideo(){
     });
 }
 
-// === PEMBAYARAN & PENGIRIMAN ===
+function tampilkanEwallet(){
+    const val = metodeBayar.value;
+    pilihEwallet.classList.toggle("hidden", val!=="ewallet");
+}
+
 function beliProduk(harga){
     if(!penggunaAktif.alamat) return alert("⚠️ Lengkapi alamat pengiriman dulu di menu 'Saya'!");
     totalBayar.innerText = "Rp " + harga.toLocaleString();
     alamatKirim.innerText = penggunaAktif.alamat;
     document.querySelectorAll(".page-content").forEach(p=>p.classList.add("hidden"));
-    checkoutPage.classList.remove("hidden"); checkoutPage.dataset.harga = harga;
+    checkoutPage.classList.remove("hidden");
+    checkoutPage.dataset.harga = harga;
+    metodeBayar.value = "";
+    pilihEwallet.classList.add("hidden");
+    jenisEwallet.value = "";
 }
+
 function prosesPembayaran(){
     const metode = metodeBayar.value;
+    const ewallet = jenisEwallet.value;
     const total = parseInt(checkoutPage.dataset.harga);
-    let statusAwal = metode==="ewallet" ? "✅ Lunas Otomatis - Menunggu Konfirmasi Toko" : "⏳ Menunggu Konfirmasi Toko (COD)";
+
+    if(!metode) return alert("Pilih metode pembayaran!");
+    if(metode==="ewallet" && !ewallet) return alert("Pilih jenis dompet digital!");
+
+    let statusAwal, infoBayar;
+    if(metode==="cod"){
+        statusAwal = "⏳ Menunggu Konfirmasi Toko (COD)";
+        infoBayar = "COD";
+    }else{
+        statusAwal = "✅ Lunas - Menunggu Konfirmasi Toko";
+        infoBayar = ewallet.toUpperCase();
+    }
 
     const pesanan = {
         id:Date.now(), pembeli:penggunaAktif.email, alamat:penggunaAktif.alamat,
-        total, metode, status:statusAwal, kurir:"J&T Ekspres", tanggal:new Date().toLocaleString()
+        total, metode:infoBayar, status:statusAwal, kurir:"J&T Ekspres",
+        tanggal:new Date().toLocaleString(), estimasiTiba:"Belum ditentukan"
     };
-    riwayatPesanan.push(pesanan); simpanData();
+    riwayatPesanan.push(pesanan);
+    simpanData();
 
-    alert(metode==="ewallet" ? "✅ Pembayaran Berhasil! Pesanan sedang diproses." : "✅ Pesanan tercatat dengan metode COD.");
-    document.querySelectorAll(".page-content").forEach(p=>p.classList.add("hidden"));
-    beranda.classList.remove("hidden");
+    if(metode==="cod"){
+        alert("✅ Pesanan COD berhasil dibuat!");
+        document.querySelectorAll(".page-content").forEach(p=>p.classList.add("hidden"));
+        beranda.classList.remove("hidden");
+    }else{
+        alert("⚠️ Anda akan dialihkan ke halaman pembayaran "+ewallet.toUpperCase());
+        setTimeout(()=> window.open(linkBayar[ewallet] || "#", "_blank"), 500);
+        document.querySelectorAll(".page-content").forEach(p=>p.classList.add("hidden"));
+        beranda.classList.remove("hidden");
+    }
 }
 
-// === CEK STATUS PESANAN ===
 function cekStatusPengiriman(){
     const milikSaya = riwayatPesanan.filter(p=>p.pembeli===penggunaAktif.email);
     if(!milikSaya.length) return alert("📦 Belum ada riwayat pesanan Anda.");
@@ -344,16 +366,16 @@ function cekStatusPengiriman(){
         isi += `📝 Pesanan ke-${no+1}\n`;
         isi += `🕒 Tanggal: ${ps.tanggal}\n`;
         isi += `💰 Total: Rp ${ps.total.toLocaleString()}\n`;
-        isi += `💳 Metode: ${ps.metode.toUpperCase()}\n`;
+        isi += `💳 Metode: ${ps.metode}\n`;
         isi += `🚚 Kurir: ${ps.kurir}\n`;
         isi += `📍 Alamat: ${ps.alamat}\n`;
+        isi += `📅 Estimasi Tiba: ${ps.estimasiTiba}\n`;
         isi += `📊 STATUS TERBARU:\n   ${ps.status}\n`;
         isi += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
     });
     alert(isi);
 }
 
-// === PENYIMPANAN DATA ===
 function simpanData(){
     localStorage.setItem("dataPengguna",JSON.stringify(dataPengguna));
     localStorage.setItem("daftarVideo",JSON.stringify(daftarVideo));

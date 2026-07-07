@@ -12,27 +12,28 @@
         <i class="fa fa-cogs"></i> PANEL PUSAT DATA TOKO MADATAURA ELECTRO
     </h1>
 
-    <!-- Tombol Segarkan -->
-    <div class="mb-6 flex justify-end">
-        <button onclick="muatData()" class="bg-blue-500 text-white px-5 py-2 rounded-lg hover:bg-blue-600 transition flex items-center gap-2">
-            <i class="fa fa-refresh"></i> Perbarui Data
-        </button>
+    <div class="mb-6 flex flex-wrap gap-3 justify-between items-center">
+        <div class="flex gap-2">
+            <button onclick="muatData()" class="bg-blue-500 text-white px-5 py-2 rounded-lg hover:bg-blue-600 transition flex items-center gap-2">
+                <i class="fa fa-refresh"></i> Perbarui Data
+            </button>
+            <button onclick="filterSemua()" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition">Semua</button>
+            <button onclick="filterBelumKirim()" class="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600 transition">Belum Dikirim</button>
+            <button onclick="filterSudahKirim()" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition">Sudah Dikirim</button>
+        </div>
     </div>
 
-    <!-- Data Pelanggan -->
     <div class="bg-white p-5 rounded-xl shadow mb-6">
         <h2 class="font-bold text-lg mb-4 border-b pb-2 flex items-center gap-2"><i class="fa fa-users text-blue-600"></i> Data Seluruh Pelanggan</h2>
         <div id="daftarPelanggan" class="overflow-x-auto"></div>
     </div>
 
-    <!-- Data Pesanan & Atur Status -->
     <div class="bg-white p-5 rounded-xl shadow">
-        <h2 class="font-bold text-lg mb-4 border-b pb-2 flex items-center gap-2"><i class="fa fa-shopping-cart text-orange-600"></i> Daftar Pesanan & Atur Status</h2>
+        <h2 class="font-bold text-lg mb-4 border-b pb-2 flex items-center gap-2"><i class="fa fa-shopping-cart text-orange-600"></i> Daftar Pesanan & Pengaturan</h2>
         <div id="daftarPesanan" class="overflow-x-auto"></div>
     </div>
 
 <script>
-// === PILIHAN STATUS PESANAN ===
 const pilihanStatus = [
     "⏳ Menunggu Konfirmasi",
     "✅ Pesanan Dikonfirmasi",
@@ -41,83 +42,85 @@ const pilihanStatus = [
     "📫 Sudah Diterima",
     "❌ Dibatalkan"
 ];
+let filterAktif = "semua";
 
-// === MUAT SEMUA DATA ===
 function muatData(){
     const pengguna = JSON.parse(localStorage.getItem("dataPengguna")) || [];
-    const pesanan = JSON.parse(localStorage.getItem("riwayatPesanan")) || [];
+    let pesanan = JSON.parse(localStorage.getItem("riwayatPesanan")) || [];
 
-    // Tampilkan Data Pelanggan
+    // Terapkan Filter
+    if(filterAktif==="belum"){
+        pesanan = pesanan.filter(p=>!p.status.includes("Dikirim") && !p.status.includes("Diterima") && !p.status.includes("Dibatalkan"));
+    }else if(filterAktif==="sudah"){
+        pesanan = pesanan.filter(p=>p.status.includes("Dikirim") || p.status.includes("Diterima"));
+    }
+
     daftarPelanggan.innerHTML = `
     <table class="w-full text-sm text-left">
         <thead class="bg-gray-200">
-            <tr>
-                <th class="p-3 rounded-tl-lg">Nama Lengkap</th>
-                <th class="p-3">Email</th>
-                <th class="p-3">No. HP</th>
-                <th class="p-3">Tgl Lahir</th>
-                <th class="p-3 rounded-tr-lg">Alamat Lengkap</th>
-            </tr>
-        </thead>
-        <tbody>
-        ${pengguna.length===0 ? `<tr><td colspan="5" class="p-4 text-center text-gray-500">Belum ada pelanggan terdaftar.</td></tr>` : ""}
-        ${pengguna.map(p=>`
-            <tr class="border-b hover:bg-gray-50">
-                <td class="p-3 font-medium">${p.nama || "-"}</td>
-                <td class="p-3">${p.email}</td>
-                <td class="p-3">${p.hp || "-"}</td>
-                <td class="p-3">${p.tglLahir || "-"}</td>
-                <td class="p-3 max-w-xs truncate">${p.alamat || "-"}</td>
-            </tr>`).join("")}
-        </tbody>
-    </table>`;
+            <tr><th class="p-3">Nama</th><th class="p-3">Email</th><th class="p-3">No. HP</th><th class="p-3">Alamat</th></tr>
+        </thead><tbody>
+        ${pengguna.length===0 ? `<tr><td colspan="4" class="p-4 text-center text-gray-500">Belum ada pelanggan.</td></tr>` : ""}
+        ${pengguna.map(p=>`<tr class="border-b"><td class="p-3">${p.nama||"-"}</td><td class="p-3">${p.email}</td><td class="p-3">${p.hp||"-"}</td><td class="p-3 max-w-xs truncate">${p.alamat||"-"}</td></tr>`).join("")}
+        </tbody></table>`;
 
-    // Tampilkan Pesanan + Ubah Status
     daftarPesanan.innerHTML = `
-    <table class="w-full text-sm text-left">
+    <table class="w-full text-xs md:text-sm text-left">
         <thead class="bg-gray-200">
             <tr>
-                <th class="p-3 rounded-tl-lg">Tanggal Pesan</th>
-                <th class="p-3">Pembeli</th>
-                <th class="p-3">Total Bayar</th>
-                <th class="p-3">Metode</th>
-                <th class="p-3">Kurir</th>
-                <th class="p-3">Alamat</th>
-                <th class="p-3">Status Saat Ini</th>
-                <th class="p-3 rounded-tr-lg">Ubah Status</th>
+                <th class="p-2">Tanggal</th><th class="p-2">Pembeli</th><th class="p-2">Total</th><th class="p-2">Metode</th>
+                <th class="p-2">Status</th><th class="p-2">Estimasi Tiba</th><th class="p-2">Ubah Status</th><th class="p-2">Hapus</th>
             </tr>
-        </thead>
-        <tbody>
-        ${pesanan.length===0 ? `<tr><td colspan="8" class="p-4 text-center text-gray-500">Belum ada pesanan masuk.</td></tr>` : ""}
-        ${pesanan.map((ps, indeks)=>`
-            <tr class="border-b hover:bg-gray-50">
-                <td class="p-3">${ps.tanggal}</td>
-                <td class="p-3 font-medium">${ps.pembeli}</td>
-                <td class="p-3 font-bold text-green-700">Rp ${ps.total.toLocaleString()}</td>
-                <td class="p-3">${ps.metode.toUpperCase()}</td>
-                <td class="p-3">${ps.kurir}</td>
-                <td class="p-3 max-w-[120px] truncate">${ps.alamat}</td>
-                <td class="p-3 font-medium">${ps.status}</td>
-                <td class="p-3">
-                    <select onchange="ubahStatus(${indeks}, this.value)" class="w-full p-2 border rounded-lg text-xs focus:ring-2 focus:ring-blue-500">
+        </thead><tbody>
+        ${pesanan.length===0 ? `<tr><td colspan="8" class="p-4 text-center text-gray-500">Belum ada pesanan.</td></tr>` : ""}
+        ${pesanan.map((ps, i)=>`
+            <tr class="border-b">
+                <td class="p-2">${ps.tanggal}</td>
+                <td class="p-2">${ps.pembeli}</td>
+                <td class="p-2 font-bold">Rp ${ps.total.toLocaleString()}</td>
+                <td class="p-2">${ps.metode}</td>
+                <td class="p-2">${ps.status}</td>
+                <td class="p-2">
+                    <input type="date" value="${ps.tglEstimasi||""}" onchange="ubahEstimasi(${i}, this.value)" class="w-full p-1 border rounded">
+                </td>
+                <td class="p-2">
+                    <select onchange="ubahStatus(${i}, this.value)" class="w-full p-1 border rounded">
                         ${pilihanStatus.map(s=>`<option value="${s}" ${ps.status===s?"selected":""}>${s}</option>`).join("")}
                     </select>
                 </td>
+                <td class="p-2">
+                    <button onclick="hapusPesanan(${i})" class="bg-red-500 text-white px-2 py-1 rounded text-xs">Hapus</button>
+                </td>
             </tr>`).join("")}
-        </tbody>
-    </table>`;
+        </tbody></table>`;
 }
 
-// === UBAH STATUS PESANAN ===
-function ubahStatus(indeks, statusBaru){
-    const pesanan = JSON.parse(localStorage.getItem("riwayatPesanan")) || [];
-    pesanan[indeks].status = statusBaru;
-    localStorage.setItem("riwayatPesanan", JSON.stringify(pesanan));
-    alert("✅ Status pesanan berhasil diperbarui! Pelanggan dapat melihat perubahannya.");
-    muatData();
+function ubahStatus(indeks, status){
+    const semua = JSON.parse(localStorage.getItem("riwayatPesanan")) || [];
+    semua[indeks].status = status;
+    localStorage.setItem("riwayatPesanan", JSON.stringify(semua));
+    alert("✅ Status diperbarui!"); muatData();
 }
 
-// === PERBARUI OTOMATIS ===
+function ubahEstimasi(indeks, tgl){
+    const semua = JSON.parse(localStorage.getItem("riwayatPesanan")) || [];
+    semua[indeks].estimasiTiba = tgl ? new Date(tgl).toLocaleDateString('id-ID') : "Belum ditentukan";
+    localStorage.setItem("riwayatPesanan", JSON.stringify(semua));
+    alert("✅ Estimasi tiba diatur!"); muatData();
+}
+
+function hapusPesanan(indeks){
+    if(!confirm("Yakin hapus pesanan ini?")) return;
+    const semua = JSON.parse(localStorage.getItem("riwayatPesanan")) || [];
+    semua.splice(indeks,1);
+    localStorage.setItem("riwayatPesanan", JSON.stringify(semua));
+    alert("✅ Pesanan dihapus!"); muatData();
+}
+
+function filterSemua(){ filterAktif="semua"; muatData(); }
+function filterBelumKirim(){ filterAktif="belum"; muatData(); }
+function filterSudahKirim(){ filterAktif="sudah"; muatData(); }
+
 muatData();
 setInterval(muatData, 5000);
 </script>
