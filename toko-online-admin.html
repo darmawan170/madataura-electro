@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TokoKu - E-Commerce + Admin Dashboard</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet">
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    * { font-family: 'Inter', sans-serif; }
+    .scrollbar-hide::-webkit-scrollbar { display: none; }
+    .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+    .animate-fade { animation: fadeIn 0.3s ease-in-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .tab-active { color: #2563eb; border-bottom: 2px solid #2563eb; }
+    .toast { animation: slideIn 0.3s ease-out, slideOut 0.3s ease-in 2.7s forwards; }
+    @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+    @keyframes slideOut { from { transform: translateX(0); } to { transform: translateX(100%); } }
+</style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+<div id="app"></div>
+<div id="toast-container" class="fixed top-4 right-4 z-[100] space-y-2"></div>
+
+<!-- Modal Container -->
+<div id="modal" class="hidden fixed inset-0 bg-black/50 z-[90] items-center justify-center p-4">
+    <div id="modal-content" class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto animate-fade"></div>
+</div>
+
+<script>
+const APP_STATE = {
+    user: null,
+    isAdmin: false,
+    currentPage: 'login',
+    currentTab: 'home',
+    currentHomeTab: 'produk',
+    selectedCategory: 'all',
+    cart: [],
+    products: [],
+    videos: [],
+    users: [],
+    orders: [],
+    jntServices: [
+        { id: 'eco', name: 'J&T ECO', price: 8000, etd: '3-5 hari' },
+        { id: 'reg', name: 'J&T REG', price: 15000, etd: '2-3 hari' },
+        { id: 'yes', name: 'J&T YES', price: 25000, etd: '1 hari' }
+    ]
+};
+
+const STORAGE_KEYS = {
+    USERS: 'tk_users',
+    PRODUCTS: 'tk_products',
+    ORDERS: 'tk_orders',
+    VIDEOS: 'tk_videos',
+    SESSION: 'tk_session',
+    CART: 'tk_cart'
+};
+
+// INIT DATA
+function initData() {
+    if (!localStorage.getItem(STORAGE_KEYS.PRODUCTS)) {
+        const dummyProducts = [
+            { id: 1, name: 'iPhone 15 Pro Max', price: 19999000, category: 'Elektronik', image: 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=400&h=400&fit=crop', isBestseller: true, stock: 15 },
+            { id: 2, name: 'Kaos Oversize Premium', price: 129000, category: 'Fashion', image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop', isBestseller: true, stock: 50 },
+            { id: 3, name: 'Snack Box Premium', price: 89000, category: 'Makanan', image: 'https://images.unsplash.com/photo-1621939514649-280e2ee25f60?w=400&h=400&fit=crop', isBestseller: false, stock: 30 },
+            { id: 4, name: 'Samsung Galaxy S24', price: 14999000, category: 'Elektronik', image: 'https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=400&h=400&fit=crop', isBestseller: false, stock: 20 },
+            { id: 5, name: 'Hoodie Unisex Premium', price: 249000, category: 'Fashion', image: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=400&h=400&fit=crop', isBestseller: false, stock: 40 },
+            { id: 6, name: 'Kopi Arabica 1kg', price: 159000, category: 'Makanan', image: 'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=400&h=400&fit=crop', isBestseller: true, stock: 25 },
+            { id: 7, name: 'AirPods Pro Gen 2', price: 3999000, category: 'Elektronik', image: 'https://images.unsplash.com/photo-1606220588913-b3aacb4d2f46?w=400&h=400&fit=crop', isBestseller: true, stock: 18 },
+            { id: 8, name: 'Sepatu Sneakers Pria', price: 599000, category: 'Fashion', image: 'https://images.unsplash.com/photo-1460353581641-37baddab0fa2?w=400&h=400&fit=crop', isBestseller: false, stock: 35 }
+        ];
+        localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(dummyProducts));
+    }
+    
+    if (!localStorage.getItem(STORAGE_KEYS.VIDEOS)) {
+        const dummyVideos = [
+            { id: 1, title: 'Review iPhone 15 Pro Max', url: 'https://www.youtube.com/embed/x6QcUFpGdRo' },
+            { id: 2, title: 'Cara Merawat Sepatu Sneakers', url: 'https://www.youtube.com/embed/LXb3EKWsInQ' }
+        ];
+        localStorage.setItem(STORAGE_KEYS.VIDEOS, JSON.stringify(dummyVideos));
+    }
+
+    if (!localStorage.getItem(STORAGE_KEYS.USERS)) {
+        localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify([]));
+    }
+    if (!localStorage.getItem(STORAGE_KEYS.ORDERS)) {
+        localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify([]));
+    }
+
+    loadState();
+}
+
+function loadState() {
+    APP_STATE.products = JSON.parse(localStorage.getItem(STORAGE_KEYS.PRODUCTS)) || [];
+    APP_STATE.videos = JSON.parse(localStorage.getItem(STORAGE_KEYS.VIDEOS)) || [];
+    APP_STATE.users = JSON.parse(localStorage.getItem(STORAGE_KEYS.USERS)) || [];
+    APP_STATE.orders = JSON.parse(localStorage.getItem(STORAGE_KEYS.ORDERS)) || [];
+    
+    const session = JSON.parse(localStorage.getItem(STORAGE_KEYS.SESSION));
+    if (session) {
+        APP_STATE.user = session.user;
+        APP_STATE.isAdmin = session.isAdmin;
+        APP_STATE.currentPage = session.isAdmin ? 'admin' : 'customer';
+        APP_STATE.cart = JSON.parse(localStorage.getItem(STORAGE_KEYS.CART + '_' + session.user.email)) || [];
+    }
+}
+
+function saveState() {
+    localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(APP_STATE.products));
+    localStorage.setItem(STORAGE_KEYS.VIDEOS, JSON.stringify(APP_STATE.videos));
+    localStorage.setItem(STORAGE_KEYS.USERS, JSON.stringify(APP_STATE.users));
+    localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(APP_STATE.orders));
+    if (APP_STATE.user) {
+        localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify({ user: APP_STATE.user, isAdmin: APP_STATE.isAdmin }));
+        localStorage.setItem(STORAGE_KEYS.CART + '_' + APP_STATE.user.email, JSON.stringify(APP_STATE.cart));
+    }
+}
+
+function showToast(message, type = 'success') {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    const bgColor = type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500';
+    const icon = type === 'success' ? 'check-line' : type === 'error' ? 'close-line' : 'information-line';
+    toast.className = `toast ${bgColor} text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-2 min-w-[280px] max-w-[400px]`;
+    toast.innerHTML = `<i class="ri-${icon} ri-lg"></i><span>${message}</span>`;
+    container.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
+
+function showModal(content) {
+    document.getElementById('modal-content').innerHTML = content;
+    document.getElementById('modal').classList.remove('hidden');
+    document.getElementById('modal').classList.add('flex');
+}
+
+function closeModal() {
+    document.getElementById('modal').classList.add('hidden');
+    document.getElementById('modal').classList.remove('flex');
+}
+
+function formatRupiah(num) {
+    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
+}
+
+function generateId() {
+    return Date.now() + Math.floor(Math.random() * 1000);
+}
+
+function render() {
+    const app = document.getElementById('app');
+    if (APP_STATE.currentPage === 'login') {
+        app.innerHTML = renderLogin();
+    } else if (APP_STATE.currentPage === 'customer') {
+        app.innerHTML = renderCustomer();
+    } else if (APP_STATE.currentPage === 'admin') {
+        app.innerHTML = renderAdmin();
+    }
+}
+
+function renderLogin() {
+    return `
+    <div class="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-blue-50 via-white to-purple-50">
+        <div class="w-full max-w-md">
+            <div class="text-center mb-8">
+                <div class="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-2xl mb-4 shadow-lg">
+                    <i class="ri-store-2-line text-white ri-2x"></i>
+                </div>
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">TokoKu</h1>
+                <p class="text-gray-600">Belanja mudah, cepat, terpercaya</p>
+            </div>
+            
+            <div class="bg-white rounded-2xl shadow-xl p-8">
+                <div id="login-form">
+                    <h2 class="text-2xl font-bold mb-6 text-center">Masuk</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Email</label>
+                            <input type="email" id="login-email" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" placeholder="email@contoh.com">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Password</label>
+                            <input type="password" id="login-password" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" placeholder="••••••••">
+                        </div>
+                        <button onclick="handleLogin()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition duration-200 shadow-md">
+                            Masuk
+                        </button>
+                    </div>
+                    <p class="text-center mt-6 text-sm text-gray-600">
+                        Belum punya akun? <button onclick="showRegister()" class="text-blue-600 font-semibold hover:underline">Daftar</button>
+                    </p>
+                    <div class="mt-6 pt-6 border-t">
+                        <button onclick="loginAsAdmin()" class="w-full bg-gray-800 hover:bg-gray-900 text-white font-semibold py-3 rounded-lg transition duration-200">
+                            <i class="ri-admin-line mr-2"></i>Masuk sebagai Admin
+                        </button>
+                    </div>
+                </div>
+
+                <div id="register-form" class="hidden">
+                    <h2 class="text-2xl font-bold mb-6 text-center">Daftar Akun</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Email</label>
+                            <input type="email" id="reg-email" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" placeholder="email@contoh.com">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Password</label>
+                            <input type="password" id="reg-password" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" placeholder="Min. 6 karakter">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-2">No HP</label>
+                            <input type="tel" id="reg-phone" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" placeholder="08123456789">
+                        </div>
+                        <button onclick="handleRegister()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition duration-200 shadow-md">
+                            Daftar
+                        </button>
+                    </div>
+                    <p class="text-center mt-6 text-sm text-gray-600">
+                        Sudah punya akun? <button onclick="showLogin()" class="text-blue-600 font-semibold hover:underline">Masuk</button>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    `;
+}
+
+function renderCustomer() {
+    const cartCount = APP_STATE.cart.reduce((sum, item) => sum + item.qty, 0);
+    return `
+    <div class="min-h-screen pb-20 md:pb-0">
+        <!-- Header -->
+        <header class="bg-white shadow-sm sticky top-0 z-50">
+            <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <i class="ri-store-2-line text-blue-600 ri-2x"></i>
+                    <span class="text-xl font-bold">TokoKu</span>
+                </div>
+                <button onclick="openCart()" class="relative">
+                    <i class="ri-shopping-cart-2-line text-2xl"></i>
+                    ${cartCount > 0 ? `<span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-semibold">${cartCount}</span>` : ''}
+                </button>
+            </div>
+            
+            <!-- Desktop Nav -->
+            <nav class="hidden md:block border-t">
+                <div class="max-w-7xl mx-auto px-4 flex gap-8">
+                    <button onclick="setTab('home')" class="py-4 font-medium ${APP_STATE.currentTab === 'home' ? 'tab-active' : 'text-gray-600'}">Beranda</button>
+                    <button onclick="setTab('video')" class="py-4 font-medium ${APP_STATE.currentTab === 'video' ? 'tab-active' : 'text-gray-600'}">Video</button>
+                    <button onclick="setTab('profile')" class="py-4 font-medium ${APP_STATE.currentTab === 'profile' ? 'tab-active' : 'text-gray-600'}">Saya</button>
+                </div>
+            </nav>
+        </header>
+
+        <!-- Content -->
+        <main class="max-w-7xl mx-auto px-4 py-6">
+            ${APP_STATE.currentTab === 'home' ? renderHomeTab() : ''}
+            ${APP_STATE.currentTab === 'video' ? renderVideoTab() : ''}
+            ${APP_STATE.currentTab === 'profile' ? renderProfileTab() : ''}
+        </main>
+
+        <!-- Mobile Bottom Nav -->
+        <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t z-50">
+            <div class="flex justify-around">
+                <button onclick="setTab('home')" class="flex flex-col items-center py-3 px-4 ${APP_STATE.currentTab === 'home' ? 'text-blue-600' : 'text-gray-600'}">
+                    <i class="ri-home-5-line ri-lg"></i>
+                    <span class="text-xs mt-1">Beranda</span>
+                </button>
+                <button onclick="setTab('video')" class="flex flex-col items-center py-3 px-4 ${APP_STATE.currentTab === 'video' ? 'text-blue-600' : 'text-gray-600'}">
+                    <i class="ri-video-line ri-lg"></i>
+                    <span class="text-xs mt-1">Video</span>
+                </button>
+                <button onclick="setTab('profile')" class="flex flex-col items-center py-3 px-4 ${APP_STATE.currentTab === 'profile' ? 'text-blue-600' : 'text-gray-600'}">
+                    <i class="ri-user-line ri-lg"></i>
+                    <span class="text-xs mt-1">Saya</span>
+                </button>
+            </div>
+        </nav>
+    </div>
+    `;
+}
+
+function renderHomeTab() {
+    const filteredProducts = APP_STATE.selectedCategory === 'all' 
+        ? APP_STATE.products 
+        : APP_STATE.products.filter(p => p.category === APP_STATE.selectedCategory);
+    
+    const bestsellerProducts = APP_STATE.products.filter(p => p.isBestseller);
+    
+    return `
+    <div class="animate-fade">
+        <!-- Home Sub Tabs -->
+        <div class="flex gap-2 mb-6 overflow-x-auto scrollbar-hide">
+            <button onclick="setHomeTab('produk')" class="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap ${APP_STATE.currentHomeTab === 'produk' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 border'}">Produk</button>
+            <button onclick="setHomeTab('terlaris')" class="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap ${APP_STATE.currentHomeTab === 'terlaris' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 border'}">Terlaris</button>
+            <button onclick="setHomeTab('kategori')" class="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap ${APP_STATE.currentHomeTab === 'kategori' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 border'}">Kategori</button>
+        </div>
+
+        ${APP_STATE.currentHomeTab === 'produk' ? `
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                ${filteredProducts.map(product => renderProductCard(product)).join('')}
+            </div>
+        ` : ''}
+
+        ${APP_STATE.currentHomeTab === 'terlaris' ? `
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                ${bestsellerProducts.map(product => renderProductCard(product)).join('')}
+            </div>
+        ` : ''}
+
+        ${APP_STATE.currentHomeTab === 'kategori' ? `
+            <div class="space-y-6">
+                <div class="flex gap-2 flex-wrap">
+                    <button onclick="filterCategory('all')" class="px-4 py-2 rounded-lg text-sm font-medium ${APP_STATE.selectedCategory === 'all' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 border'}">
+                        Semua
+                    </button>
+                    <button onclick="filterCategory('Fashion')" class="px-4 py-2 rounded-lg text-sm font-medium ${APP_STATE.selectedCategory === 'Fashion' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 border'}">
+                        Fashion
+                    </button>
+                    <button onclick="filterCategory('Elektronik')" class="px-4 py-2 rounded-lg text-sm font-medium ${APP_STATE.selectedCategory === 'Elektronik' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 border'}">
+                        Elektronik
+                    </button>
+                    <button onclick="filterCategory('Makanan')" class="px-4 py-2 rounded-lg text-sm font-medium ${APP_STATE.selectedCategory === 'Makanan' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 border'}">
+                        Makanan
+                    </button>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    ${filteredProducts.map(product => renderProductCard(product)).join('')}
+                </div>
+            </div>
+        ` : ''}
+    </div>
+    `;
+}
+
+function renderProductCard(product) {
+    return `
+    <div class="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden group">
+        <div class="relative aspect-square overflow-hidden bg-gray-100">
+            <img src="${product.image}" alt="${product.name}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" onerror="this.src='https://via.placeholder.com/400x400?text=No+Image'">
+            ${product.isBestseller ? `<span class="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full font-semibold">Terlaris</span>` : ''}
+        </div>
+        <div class="p-3">
+            <h3 class="font-medium text-sm mb-1 line-clamp-2 min-h-[40px]">${product.name}</h3>
+            <p class="text-blue-600 font-bold text-lg mb-3">${formatRupiah(product.price)}</p>
+            <button onclick="addToCart(${product.id})" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-2 rounded-lg transition duration-200">
+                <i class="ri-shopping-cart-line mr-1"></i>Beli
+            </button>
+        </div>
+    </div>
+    `;
+}
+
+function renderVideoTab() {
+    return `
+    <div class="animate-fade space-y-6">
+        <h2 class="text-2xl font-bold">Video Produk</h2>
+        ${APP_STATE.videos.length === 0 ? `<p class="text-gray-500 text-center py-12">Belum ada video</p>` : ''}
+        <div class="grid md:grid-cols-2 gap-6">
+            ${APP_STATE.videos.map(video => `
+                <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+                    <div class="aspect-video">
+                        <iframe src="${video.url}" class="w-full h-full" frameborder="0" allowfullscreen></iframe>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-semibold">${video.title}</h3>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    </div>
+    `;
+}
+
+function renderProfileTab() {
+    const userOrders = APP_STATE.orders.filter(o => o.userEmail === APP_STATE.user.email);
+    return `
+    <div class="animate-fade space-y-6">
+        <div class="bg-white rounded-xl shadow-sm p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-xl font-bold">Profil Saya</h2>
+                <button onclick="logout()" class="text-red-600 hover:text-red-700 font-medium text-sm">
+                    <i class="ri-logout-box-r-line mr-1"></i>Keluar
+                </button>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm text-gray-600 mb-1">Email</label>
+                    <p class="font-medium">${APP_STATE.user.email}</p>
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-600 mb-1">No HP</label>
+                    <input type="tel" id="profile-phone" value="${APP_STATE.user.phone || ''}" class="w-full px-4 py-2 border rounded-lg" placeholder="08123456789">
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-600 mb-1">Tanggal Lahir</label>
+                    <input type="date" id="profile-birthdate" value="${APP_STATE.user.birthdate || ''}" class="w-full px-4 py-2 border rounded-lg">
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-600 mb-1">Alamat Lengkap</label>
+                    <textarea id="profile-address" class="w-full px-4 py-2 border rounded-lg" rows="3" placeholder="Jl. Contoh No. 123, Kota, Provinsi">${APP_STATE.user.address || ''}</textarea>
+                </div>
+                <button onclick="updateProfile()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition">
+                    Simpan Perubahan
+                </button>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm p-6">
+            <h2 class="text-xl font-bold mb-4">Riwayat Pesanan</h2>
+            ${userOrders.length === 0 ? `<p class="text-gray-500 text-center py-8">Belum ada pesanan</p>` : ''}
+            <div class="space-y-4">
+                ${userOrders.map(order => `
+                    <div class="border rounded-lg p-4">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <p class="font-semibold text-sm">#${order.id}</p>
+                                <p class="text-xs text-gray-600">${new Date(order.date).toLocaleDateString('id-ID')}</p>
+                            </div>
+                            <span class="px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(order.shippingStatus)}">
+                                ${order.shippingStatus}
+                            </span>
+                        </div>
+                        <div class="text-sm space-y-1 mb-3">
+                            ${order.items.map(item => `<p>${item.name} x${item.qty}</p>`).join('')}
+                        </div>
+                        <div class="flex justify-between items-center text-sm pt-3 border-t">
+                            <span class="font-semibold">Total: ${formatRupiah(order.total)}</span>
+                            ${order.trackingNumber ? `<span class="text-xs text-blue-600">Resi: ${order.trackingNumber}</span>` : ''}
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    </div>
+    `;
+}
+
+function renderAdmin() {
+    return `
+    <div class="min-h-screen bg-gray-100">
+        <header class="bg-gray-900 text-white shadow-lg">
+            <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <i class="ri-dashboard-3-line text-2xl"></i>
+                    <span class="text-xl font-bold">Admin Dashboard</span>
+                </div>
+                <button onclick="logout()" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg text-sm font-semibold">
+                    <i class="ri-logout-box-r-line mr-1"></i>Keluar
+                </button>
+            </div>
+        </header>
+
+        <main class="max-w-7xl mx-auto px-4 py-6 space-y-6">
+            <!-- Data Customer -->
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+                    <i class="ri-user-3-line text-blue-600"></i>Data Customer
+                </h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="text-left p-3 font-semibold">Email</th>
+                                <th class="text-left p-3 font-semibold">No HP</th>
+                                <th class="text-left p-3 font-semibold">Alamat</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${APP_STATE.users.map(user => `
+                                <tr class="border-t">
+                                    <td class="p-3">${user.email}</td>
+                                    <td class="p-3">${user.phone || '-'}</td>
+                                    <td class="p-3">${user.address || '-'}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Data Pesanan -->
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+                    <i class="ri-shopping-bag-3-line text-blue-600"></i>Data Pesanan
+                </h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="text-left p-3 font-semibold">ID</th>
+                                <th class="text-left p-3 font-semibold">Customer</th>
+                                <th class="text-left p-3 font-semibold">Total</th>
+                                <th class="text-left p-3 font-semibold">Pembayaran</th>
+                                <th class="text-left p-3 font-semibold">Status</th>
+                                <th class="text-left p-3 font-semibold">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${APP_STATE.orders.map(order => `
+                                <tr class="border-t">
+                                    <td class="p-3">#${order.id}</td>
+                                    <td class="p-3">${order.userEmail}</td>
+                                    <td class="p-3 font-semibold">${formatRupiah(order.total)}</td>
+                                    <td class="p-3">
+                                        <span class="px-2 py-1 rounded text-xs font-semibold ${order.paymentStatus === 'LUNAS' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">
+                                            ${order.paymentStatus}
+                                        </span>
+                                    </td>
+                                    <td class="p-3">
+                                        <span class="px-2 py-1 rounded text-xs font-semibold ${getStatusColor(order.shippingStatus)}">
+                                            ${order.shippingStatus}
+                                        </span>
+                                    </td>
+                                    <td class="p-3">
+                                        <button onclick="updateOrderStatus(${order.id})" class="text-blue-600 hover:text-blue-700 text-xs font-semibold">
+                                            Update
+                                        </button>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Kelola Produk -->
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xl font-bold flex items-center gap-2">
+                        <i class="ri-box-3-line text-blue-600"></i>Kelola Produk
+                    </h2>
+                    <button onclick="addProduct()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold">
+                        <i class="ri-add-line mr-1"></i>Tambah Produk
+                    </button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    ${APP_STATE.products.map(product => `
+                        <div class="border rounded-lg p-4">
+                            <img src="${product.image}" alt="${product.name}" class="w-full h-32 object-cover rounded mb-3" onerror="this.src='https://via.placeholder.com/400x400?text=No+Image'">
+                            <h3 class="font-semibold text-sm mb-1">${product.name}</h3>
+                            <p class="text-blue-600 font-bold mb-2">${formatRupiah(product.price)}</p>
+                            <div class="flex gap-2">
+                                <button onclick="editProduct(${product.id})" class="flex-1 bg-gray-100 hover:bg-gray-200 text-xs py-2 rounded">
+                                    <i class="ri-edit-line"></i> Edit
+                                </button>
+                                <button onclick="deleteProduct(${product.id})" class="flex-1 bg-red-100 hover:bg-red-200 text-red-600 text-xs py-2 rounded">
+                                    <i class="ri-delete-bin-line"></i> Hapus
+                                </button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+
+            <!-- Upload Video -->
+            <div class="bg-white rounded-xl shadow-sm p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xl font-bold flex items-center gap-2">
+                        <i class="ri-video-line text-blue-600"></i>Kelola Video
+                    </h2>
+                    <button onclick="addVideo()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold">
+                        <i class="ri-add-line mr-1"></i>Tambah Video
+                    </button>
+                </div>
+                <div class="space-y-3">
+                    ${APP_STATE.videos.map(video => `
+                        <div class="flex items-center justify-between border rounded-lg p-3">
+                            <span class="font-medium text-sm">${video.title}</span>
+                            <button onclick="deleteVideo(${video.id})" class="text-red-600 hover:text-red-700">
+                                <i class="ri-delete-bin-line"></i>
+                            </button>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        </main>
+    </div>
+    `;
+}
+
+// AUTH FUNCTIONS
+function showRegister() {
+    document.getElementById('login-form').classList.add('hidden');
+    document.getElementById('register-form').classList.remove('hidden');
+}
+
+function showLogin() {
+    document.getElementById('register-form').classList.add('hidden');
+    document.getElementById('login-form').classList.remove('hidden');
+}
+
+function handleRegister() {
+    const email = document.getElementById('reg-email').value.trim();
+    const password = document.getElementById('reg-password').value;
+    const phone = document.getElementById('reg-phone').value.trim();
+
+    if (!email || !password || !phone) {
+        showToast('Semua field harus diisi', 'error');
+        return;
+    }
+    if (password.length < 6) {
+        showToast('Password minimal 6 karakter', 'error');
+        return;
+    }
+    if (APP_STATE.users.find(u => u.email === email)) {
+        showToast('Email sudah terdaftar', 'error');
+        return;
+    }
+
+    const newUser = { email, password, phone, address: '', birthdate: '' };
+    APP_STATE.users.push(newUser);
+    saveState();
+    showToast('Pendaftaran berhasil! Silakan login');
+    showLogin();
+}
+
+function handleLogin() {
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+
+    if (!email || !password) {
+        showToast('Email dan password harus diisi', 'error');
+        return;
+    }
+
+    const user = APP_STATE.users.find(u => u.email === email && u.password === password);
+    if (user) {
+        APP_STATE.user = user;
+        APP_STATE.isAdmin = false;
+        APP_STATE.currentPage = 'customer';
+        saveState();
+        loadState();
+        render();
+        showToast('Login berhasil!');
+    } else {
+        showToast('Email atau password salah', 'error');
+    }
+}
+
+function loginAsAdmin() {
+    APP_STATE.user = { email: 'admin@tokoku.com' };
+    APP_STATE.isAdmin = true;
+    APP_STATE.currentPage = 'admin';
+    saveState();
+    render();
+    showToast('Login sebagai Admin');
+}
+
+function logout() {
+    APP_STATE.user = null;
+    APP_STATE.isAdmin = false;
+    APP_STATE.currentPage = 'login';
+    APP_STATE.cart = [];
+    localStorage.removeItem(STORAGE_KEYS.SESSION);
+    render();
+    showToast('Berhasil keluar');
+}
+
+// CUSTOMER FUNCTIONS
+function setTab(tab) {
+    APP_STATE.currentTab = tab;
+    render();
+}
+
+function setHomeTab(tab) {
+    APP_STATE.currentHomeTab = tab;
+    render();
+}
+
+function filterCategory(cat) {
+    APP_STATE.selectedCategory = cat;
+    render();
+}
+
+function addToCart(productId) {
+    if (!APP_STATE.user) {
+        showToast('Silakan login terlebih dahulu', 'error');
+        return;
+    }
+    const product = APP_STATE.products.find(p => p.id === productId);
+    const cartItem = APP_STATE.cart.find(item => item.id === productId);
+    
+    if (cartItem) {
+        cartItem.qty++;
+    } else {
+        APP_STATE.cart.push({ ...product, qty: 1 });
+    }
+    saveState();
+    render();
+    showToast('Produk ditambahkan ke keranjang');
+}
+
+function openCart() {
+    if (APP_STATE.cart.length === 0) {
+        showToast('Keranjang kosong', 'error');
+        return;
+    }
+    
+    const subtotal = APP_STATE.cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+    
+    showModal(`
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold">Keranjang Belanja</h2>
+                <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="ri-close-line ri-2x"></i>
+                </button>
+            </div>
+            <div class="space-y-4 mb-6 max-h-[400px] overflow-y-auto">
+                ${APP_STATE.cart.map(item => `
+                    <div class="flex gap-4 items-center border-b pb-4">
+                        <img src="${item.image}" alt="${item.name}" class="w-20 h-20 object-cover rounded-lg">
+                        <div class="flex-1">
+                            <h3 class="font-semibold text-sm mb-1">${item.name}</h3>
+                            <p class="text-blue-600 font-bold">${formatRupiah(item.price)}</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button onclick="updateCartQty(${item.id}, -1)" class="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded">-</button>
+                            <span class="w-8 text-center font-semibold">${item.qty}</span>
+                            <button onclick="updateCartQty(${item.id}, 1)" class="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded">+</button>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+            <div class="border-t pt-4 mb-6">
+                <div class="flex justify-between text-lg font-bold">
+                    <span>Subtotal:</span>
+                    <span class="text-blue-600">${formatRupiah(subtotal)}</span>
+                </div>
+            </div>
+            <button onclick="openCheckout()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg">
+                Lanjut ke Checkout
+            </button>
+        </div>
+    `);
+}
+
+function updateCartQty(productId, delta) {
+    const item = APP_STATE.cart.find(i => i.id === productId);
+    if (item) {
+        item.qty += delta;
+        if (item.qty <= 0) {
+            APP_STATE.cart = APP_STATE.cart.filter(i => i.id !== productId);
+        }
+        saveState();
+        if (APP_STATE.cart.length === 0) {
+            closeModal();
+            render();
+        } else {
+            openCart();
+            render();
+        }
+    }
+}
+
+function openCheckout() {
+    closeModal();
+    const subtotal = APP_STATE.cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+    
+    showModal(`
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold">Checkout</h2>
+                <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="ri-close-line ri-2x"></i>
+                </button>
+            </div>
+            <div class="space-y-6">
+                <div>
+                    <h3 class="font-semibold mb-3">Alamat Pengiriman</h3>
+                    <textarea id="checkout-address" class="w-full px-4 py-3 border rounded-lg" rows="3" placeholder="Masukkan alamat lengkap">${APP_STATE.user.address || ''}</textarea>
+                </div>
+                
+                <div>
+                    <h3 class="font-semibold mb-3">Pilih Jasa Pengiriman J&T</h3>
+                    <div class="space-y-2">
+                        ${APP_STATE.jntServices.map(service => `
+                            <label class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+                                <input type="radio" name="shipping" value="${service.id}" onchange="updateShippingCost()" ${service.id === 'reg' ? 'checked' : ''}>
+                                <div class="flex-1">
+                                    <div class="font-semibold text-sm">${service.name}</div>
+                                    <div class="text-xs text-gray-600">Estimasi ${service.etd}</div>
+                                </div>
+                                <div class="font-semibold text-blue-600">${formatRupiah(service.price)}</div>
+                            </label>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="font-semibold mb-3">Metode Pembayaran</h3>
+                    <div class="space-y-2">
+                        <label class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+                            <input type="radio" name="payment" value="ewallet" checked>
+                            <i class="ri-wallet-3-line text-2xl text-blue-600"></i>
+                            <span class="font-semibold">E-Wallet</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+                            <input type="radio" name="payment" value="cod">
+                            <i class="ri-truck-line text-2xl text-green-600"></i>
+                            <span class="font-semibold">COD (Bayar di Tempat)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="border-t pt-4 space-y-2">
+                    <div class="flex justify-between text-sm">
+                        <span>Subtotal:</span>
+                        <span>${formatRupiah(subtotal)}</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span>Ongkir:</span>
+                        <span id="shipping-cost">${formatRupiah(15000)}</span>
+                    </div>
+                    <div class="flex justify-between text-lg font-bold pt-2 border-t">
+                        <span>Total:</span>
+                        <span class="text-blue-600" id="total-cost">${formatRupiah(subtotal + 15000)}</span>
+                    </div>
+                </div>
+
+                <button onclick="processCheckout()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg">
+                    Bayar Sekarang
+                </button>
+            </div>
+        </div>
+    `);
+}
+
+function updateShippingCost() {
+    const selectedService = document.querySelector('input[name="shipping"]:checked').value;
+    const service = APP_STATE.jntServices.find(s => s.id === selectedService);
+    const subtotal = APP_STATE.cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+    const total = subtotal + service.price;
+    
+    document.getElementById('shipping-cost').textContent = formatRupiah(service.price);
+    document.getElementById('total-cost').textContent = formatRupiah(total);
+}
+
+function processCheckout() {
+    const address = document.getElementById('checkout-address').value.trim();
+    if (!address) {
+        showToast('Alamat pengiriman harus diisi', 'error');
+        return;
+    }
+
+    const shippingId = document.querySelector('input[name="shipping"]:checked').value;
+    const payment = document.querySelector('input[name="payment"]:checked').value;
+    const shipping = APP_STATE.jntServices.find(s => s.id === shippingId);
+    const subtotal = APP_STATE.cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+    const total = subtotal + shipping.price;
+
+    const order = {
+        id: generateId(),
+        userEmail: APP_STATE.user.email,
+        items: [...APP_STATE.cart],
+        address: address,
+        shipping: shipping.name,
+        shippingCost: shipping.price,
+        subtotal: subtotal,
+        total: total,
+        paymentMethod: payment === 'ewallet' ? 'E-Wallet' : 'COD',
+        paymentStatus: payment === 'ewallet' ? 'LUNAS' : 'COD',
+        shippingStatus: 'Dikemas',
+        trackingNumber: '',
+        date: new Date().toISOString()
+    };
+
+    APP_STATE.orders.push(order);
+    APP_STATE.cart = [];
+    saveState();
+    closeModal();
+    render();
+    showToast(payment === 'ewallet' ? 'Pembayaran berhasil!' : 'Pesanan COD berhasil dibuat!', 'success');
+    setTimeout(() => {
+        APP_STATE.currentTab = 'profile';
+        render();
+    }, 1500);
+}
+
+function updateProfile() {
+    APP_STATE.user.phone = document.getElementById('profile-phone').value;
+    APP_STATE.user.birthdate = document.getElementById('profile-birthdate').value;
+    APP_STATE.user.address = document.getElementById('profile-address').value;
+    
+    const userIndex = APP_STATE.users.findIndex(u => u.email === APP_STATE.user.email);
+    if (userIndex !== -1) {
+        APP_STATE.users[userIndex] = APP_STATE.user;
+    }
+    
+    saveState();
+    showToast('Profil berhasil diupdate');
+}
+
+// ADMIN FUNCTIONS
+function addProduct() {
+    showModal(`
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold">Tambah Produk</h2>
+                <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="ri-close-line ri-2x"></i>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <input type="text" id="prod-name" placeholder="Nama Produk" class="w-full px-4 py-3 border rounded-lg">
+                <input type="number" id="prod-price" placeholder="Harga" class="w-full px-4 py-3 border rounded-lg">
+                <select id="prod-category" class="w-full px-4 py-3 border rounded-lg">
+                    <option value="Fashion">Fashion</option>
+                    <option value="Elektronik">Elektronik</option>
+                    <option value="Makanan">Makanan</option>
+                </select>
+                <input type="url" id="prod-image" placeholder="URL Gambar" class="w-full px-4 py-3 border rounded-lg">
+                <label class="flex items-center gap-2">
+                    <input type="checkbox" id="prod-bestseller" class="w-4 h-4">
+                    <span class="text-sm">Tandai sebagai Terlaris</span>
+                </label>
+                <button onclick="saveNewProduct()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg">
+                    Simpan Produk
+                </button>
+            </div>
+        </div>
+    `);
+}
+
+function saveNewProduct() {
+    const name = document.getElementById('prod-name').value.trim();
+    const price = parseInt(document.getElementById('prod-price').value);
+    const category = document.getElementById('prod-category').value;
+    const image = document.getElementById('prod-image').value.trim();
+    const isBestseller = document.getElementById('prod-bestseller').checked;
+
+    if (!name || !price || !image) {
+        showToast('Semua field harus diisi', 'error');
+        return;
+    }
+
+    APP_STATE.products.push({
+        id: generateId(),
+        name, price, category, image, isBestseller,
+        stock: 100
+    });
+
+    saveState();
+    closeModal();
+    render();
+    showToast('Produk berhasil ditambahkan');
+}
+
+function editProduct(id) {
+    const product = APP_STATE.products.find(p => p.id === id);
+    showModal(`
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold">Edit Produk</h2>
+                <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="ri-close-line ri-2x"></i>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <input type="text" id="edit-prod-name" value="${product.name}" class="w-full px-4 py-3 border rounded-lg">
+                <input type="number" id="edit-prod-price" value="${product.price}" class="w-full px-4 py-3 border rounded-lg">
+                <select id="edit-prod-category" class="w-full px-4 py-3 border rounded-lg">
+                    <option value="Fashion" ${product.category === 'Fashion' ? 'selected' : ''}>Fashion</option>
+                    <option value="Elektronik" ${product.category === 'Elektronik' ? 'selected' : ''}>Elektronik</option>
+                    <option value="Makanan" ${product.category === 'Makanan' ? 'selected' : ''}>Makanan</option>
+                </select>
+                <input type="url" id="edit-prod-image" value="${product.image}" class="w-full px-4 py-3 border rounded-lg">
+                <label class="flex items-center gap-2">
+                    <input type="checkbox" id="edit-prod-bestseller" ${product.isBestseller ? 'checked' : ''} class="w-4 h-4">
+                    <span class="text-sm">Tandai sebagai Terlaris</span>
+                </label>
+                <button onclick="saveEditProduct(${id})" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg">
+                    Update Produk
+                </button>
+            </div>
+        </div>
+    `);
+}
+
+function saveEditProduct(id) {
+    const productIndex = APP_STATE.products.findIndex(p => p.id === id);
+    APP_STATE.products[productIndex] = {
+        ...APP_STATE.products[productIndex],
+        name: document.getElementById('edit-prod-name').value,
+        price: parseInt(document.getElementById('edit-prod-price').value),
+        category: document.getElementById('edit-prod-category').value,
+        image: document.getElementById('edit-prod-image').value,
+        isBestseller: document.getElementById('edit-prod-bestseller').checked
+    };
+
+    saveState();
+    closeModal();
+    render();
+    showToast('Produk berhasil diupdate');
+}
+
+function deleteProduct(id) {
+    if (confirm('Yakin ingin menghapus produk ini?')) {
+        APP_STATE.products = APP_STATE.products.filter(p => p.id !== id);
+        saveState();
+        render();
+        showToast('Produk berhasil dihapus');
+    }
+}
+
+function addVideo() {
+    showModal(`
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold">Tambah Video</h2>
+                <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="ri-close-line ri-2x"></i>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <input type="text" id="video-title" placeholder="Judul Video" class="w-full px-4 py-3 border rounded-lg">
+                <input type="url" id="video-url" placeholder="URL YouTube Embed (contoh: https://www.youtube.com/embed/...)" class="w-full px-4 py-3 border rounded-lg">
+                <p class="text-xs text-gray-600">Gunakan link embed YouTube: klik Share > Embed di YouTube</p>
+                <button onclick="saveNewVideo()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg">
+                    Simpan Video
+                </button>
+            </div>
+        </div>
+    `);
+}
+
+function saveNewVideo() {
+    const title = document.getElementById('video-title').value.trim();
+    const url = document.getElementById('video-url').value.trim();
+
+    if (!title || !url) {
+        showToast('Semua field harus diisi', 'error');
+        return;
+    }
+
+    APP_STATE.videos.push({ id: generateId(), title, url });
+    saveState();
+    closeModal();
+    render();
+    showToast('Video berhasil ditambahkan');
+}
+
+function deleteVideo(id) {
+    if (confirm('Yakin ingin menghapus video ini?')) {
+        APP_STATE.videos = APP_STATE.videos.filter(v => v.id !== id);
+        saveState();
+        render();
+        showToast('Video berhasil dihapus');
+    }
+}
+
+function updateOrderStatus(orderId) {
+    const order = APP_STATE.orders.find(o => o.id === orderId);
+    showModal(`
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold">Update Status Pesanan</h2>
+                <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="ri-close-line ri-2x"></i>
+                </button>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-2">Status Pengiriman</label>
+                    <select id="order-status" class="w-full px-4 py-3 border rounded-lg">
+                        <option value="Dikemas" ${order.shippingStatus === 'Dikemas' ? 'selected' : ''}>Dikemas</option>
+                        <option value="Dikirim" ${order.shippingStatus === 'Dikirim' ? 'selected' : ''}>Dikirim</option>
+                        <option value="Selesai" ${order.shippingStatus === 'Selesai' ? 'selected' : ''}>Selesai</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-2">Nomor Resi J&T</label>
+                    <input type="text" id="order-tracking" value="${order.trackingNumber || ''}" placeholder="JP123456789" class="w-full px-4 py-3 border rounded-lg">
+                </div>
+                <button onclick="saveOrderStatus(${orderId})" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg">
+                    Update Status
+                </button>
+            </div>
+        </div>
+    `);
+}
+
+function saveOrderStatus(orderId) {
+    const orderIndex = APP_STATE.orders.findIndex(o => o.id === orderId);
+    APP_STATE.orders[orderIndex].shippingStatus = document.getElementById('order-status').value;
+    APP_STATE.orders[orderIndex].trackingNumber = document.getElementById('order-tracking').value;
+    
+    saveState();
+    closeModal();
+    render();
+    showToast('Status pesanan berhasil diupdate');
+}
+
+function getStatusColor(status) {
+    switch(status) {
+        case 'Dikemas': return 'bg-yellow-100 text-yellow-700';
+        case 'Dikirim': return 'bg-blue-100 text-blue-700';
+        case 'Selesai': return 'bg-green-100 text-green-700';
+        default: return 'bg-gray-100 text-gray-700';
+    }
+}
+
+// Close modal on outside click
+document.getElementById('modal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+});
+
+// INIT APP
+initData();
+render();
+</script>
+<script>(function(){document.addEventListener("click",function(e){var a=e.target.closest("[data-product-id]");if(!a)return;e.preventDefault();var pid=a.getAttribute("data-product-id");if(pid)parent.postMessage({type:"ecto-artifact-link-click",productId:pid},"*")})})();</script>
+</body>
+</html>
