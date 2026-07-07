@@ -3,45 +3,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel Pengelolaan Toko</title>
+    <title>Panel Admin - Madataura Electro</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
 </head>
-<body class="bg-gray-100 p-6 max-w-6xl mx-auto">
-    <h1 class="text-2xl font-bold text-center mb-6 bg-blue-700 text-white py-3 rounded">📊 PANEL PUSAT DATA TOKO</h1>
+<body class="bg-gray-100 p-4 md:p-6 max-w-7xl mx-auto">
+    <h1 class="text-2xl font-bold text-center mb-6 bg-blue-700 text-white py-4 rounded-xl shadow-lg">
+        <i class="fa fa-cogs"></i> PANEL PUSAT DATA TOKO MADATAURA ELECTRO
+    </h1>
+
+    <!-- Tombol Segarkan -->
+    <div class="mb-6 flex justify-end">
+        <button onclick="muatData()" class="bg-blue-500 text-white px-5 py-2 rounded-lg hover:bg-blue-600 transition flex items-center gap-2">
+            <i class="fa fa-refresh"></i> Perbarui Data
+        </button>
+    </div>
 
     <!-- Data Pelanggan -->
-    <div class="bg-white p-5 rounded-lg shadow mb-6">
-        <h2 class="font-bold text-lg mb-3">👥 Data Seluruh Pelanggan</h2>
+    <div class="bg-white p-5 rounded-xl shadow mb-6">
+        <h2 class="font-bold text-lg mb-4 border-b pb-2 flex items-center gap-2"><i class="fa fa-users text-blue-600"></i> Data Seluruh Pelanggan</h2>
         <div id="daftarPelanggan" class="overflow-x-auto"></div>
     </div>
 
-    <!-- Data Pesanan & Pembayaran -->
-    <div class="bg-white p-5 rounded-lg shadow">
-        <h2 class="font-bold text-lg mb-3">🛒 Daftar Pesanan & Status Pembayaran</h2>
+    <!-- Data Pesanan & Atur Status -->
+    <div class="bg-white p-5 rounded-xl shadow">
+        <h2 class="font-bold text-lg mb-4 border-b pb-2 flex items-center gap-2"><i class="fa fa-shopping-cart text-orange-600"></i> Daftar Pesanan & Atur Status</h2>
         <div id="daftarPesanan" class="overflow-x-auto"></div>
     </div>
 
 <script>
+// === PILIHAN STATUS PESANAN ===
+const pilihanStatus = [
+    "⏳ Menunggu Konfirmasi",
+    "✅ Pesanan Dikonfirmasi",
+    "📦 Sedang Dikemas",
+    "🚚 Dikirim via J&T Ekspres",
+    "📫 Sudah Diterima",
+    "❌ Dibatalkan"
+];
+
+// === MUAT SEMUA DATA ===
 function muatData(){
     const pengguna = JSON.parse(localStorage.getItem("dataPengguna")) || [];
     const pesanan = JSON.parse(localStorage.getItem("riwayatPesanan")) || [];
 
-    // Tampilkan Pelanggan
+    // Tampilkan Data Pelanggan
     daftarPelanggan.innerHTML = `
     <table class="w-full text-sm text-left">
-        <thead class="bg-gray-200"><tr><th class="p-2">Nama</th><th class="p-2">Email</th><th class="p-2">No. HP</th><th class="p-2">Alamat Lengkap</th></tr></thead><tbody>
-        ${pengguna.map(p=>`<tr class="border-b"><td class="p-2">${p.nama||"-"}</td><td class="p-2">${p.email}</td><td class="p-2">${p.hp||"-"}</td><td class="p-2">${p.alamat||"-"}</td></tr>`).join("")}
-        </tbody></table>`;
+        <thead class="bg-gray-200">
+            <tr>
+                <th class="p-3 rounded-tl-lg">Nama Lengkap</th>
+                <th class="p-3">Email</th>
+                <th class="p-3">No. HP</th>
+                <th class="p-3">Tgl Lahir</th>
+                <th class="p-3 rounded-tr-lg">Alamat Lengkap</th>
+            </tr>
+        </thead>
+        <tbody>
+        ${pengguna.length===0 ? `<tr><td colspan="5" class="p-4 text-center text-gray-500">Belum ada pelanggan terdaftar.</td></tr>` : ""}
+        ${pengguna.map(p=>`
+            <tr class="border-b hover:bg-gray-50">
+                <td class="p-3 font-medium">${p.nama || "-"}</td>
+                <td class="p-3">${p.email}</td>
+                <td class="p-3">${p.hp || "-"}</td>
+                <td class="p-3">${p.tglLahir || "-"}</td>
+                <td class="p-3 max-w-xs truncate">${p.alamat || "-"}</td>
+            </tr>`).join("")}
+        </tbody>
+    </table>`;
 
-    // Tampilkan Pesanan
+    // Tampilkan Pesanan + Ubah Status
     daftarPesanan.innerHTML = `
     <table class="w-full text-sm text-left">
-        <thead class="bg-gray-200"><tr><th class="p-2">Tanggal</th><th class="p-2">Pembeli</th><th class="p-2">Total Bayar</th><th class="p-2">Metode</th><th class="p-2">Kurir</th><th class="p-2">Alamat Tujuan</th><th class="p-2">Status</th></tr></thead><tbody>
-        ${pesanan.map(ps=>`<tr class="border-b"><td class="p-2">${ps.tanggal}</td><td class="p-2">${ps.pembeli}</td><td class="p-2">Rp ${ps.total.toLocaleString()}</td><td class="p-2">${ps.metode.toUpperCase()}</td><td class="p-2">${ps.kurir}</td><td class="p-2">${ps.alamat}</td><td class="p-2 font-semibold">${ps.status}</td></tr>`).join("")}
-        </tbody></table>`;
+        <thead class="bg-gray-200">
+            <tr>
+                <th class="p-3 rounded-tl-lg">Tanggal Pesan</th>
+                <th class="p-3">Pembeli</th>
+                <th class="p-3">Total Bayar</th>
+                <th class="p-3">Metode</th>
+                <th class="p-3">Kurir</th>
+                <th class="p-3">Alamat</th>
+                <th class="p-3">Status Saat Ini</th>
+                <th class="p-3 rounded-tr-lg">Ubah Status</th>
+            </tr>
+        </thead>
+        <tbody>
+        ${pesanan.length===0 ? `<tr><td colspan="8" class="p-4 text-center text-gray-500">Belum ada pesanan masuk.</td></tr>` : ""}
+        ${pesanan.map((ps, indeks)=>`
+            <tr class="border-b hover:bg-gray-50">
+                <td class="p-3">${ps.tanggal}</td>
+                <td class="p-3 font-medium">${ps.pembeli}</td>
+                <td class="p-3 font-bold text-green-700">Rp ${ps.total.toLocaleString()}</td>
+                <td class="p-3">${ps.metode.toUpperCase()}</td>
+                <td class="p-3">${ps.kurir}</td>
+                <td class="p-3 max-w-[120px] truncate">${ps.alamat}</td>
+                <td class="p-3 font-medium">${ps.status}</td>
+                <td class="p-3">
+                    <select onchange="ubahStatus(${indeks}, this.value)" class="w-full p-2 border rounded-lg text-xs focus:ring-2 focus:ring-blue-500">
+                        ${pilihanStatus.map(s=>`<option value="${s}" ${ps.status===s?"selected":""}>${s}</option>`).join("")}
+                    </select>
+                </td>
+            </tr>`).join("")}
+        </tbody>
+    </table>`;
 }
+
+// === UBAH STATUS PESANAN ===
+function ubahStatus(indeks, statusBaru){
+    const pesanan = JSON.parse(localStorage.getItem("riwayatPesanan")) || [];
+    pesanan[indeks].status = statusBaru;
+    localStorage.setItem("riwayatPesanan", JSON.stringify(pesanan));
+    alert("✅ Status pesanan berhasil diperbarui! Pelanggan dapat melihat perubahannya.");
+    muatData();
+}
+
+// === PERBARUI OTOMATIS ===
 muatData();
-setInterval(muatData, 3000); // Segarkan data otomatis
+setInterval(muatData, 5000);
 </script>
 </body>
 </html>

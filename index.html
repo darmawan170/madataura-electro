@@ -3,48 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Toko Saya</title>
+    <title>Toko Madataura Electro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
 </head>
 <body class="bg-gray-50">
 
 <!-- Halaman Login/Daftar -->
-<div id="authPage" class="min-h-screen flex items-center justify-center">
-    <div class="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+<div id="authPage" class="min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+        <div class="text-center mb-6">
+            <h1 class="text-2xl font-bold text-blue-700">Madataura Electro</h1>
+            <p class="text-gray-500">Belanja Mudah & Terpercaya</p>
+        </div>
         <div class="flex mb-4 border-b">
-            <button class="tab-btn active px-4 py-2 w-1/2" onclick="switchTab('login')">Masuk</button>
-            <button class="tab-btn px-4 py-2 w-1/2" onclick="switchTab('daftar')">Daftar</button>
+            <button class="tab-btn active px-4 py-2 w-1/2 font-medium" onclick="switchTab('login')">Masuk</button>
+            <button class="tab-btn px-4 py-2 w-1/2 font-medium" onclick="switchTab('daftar')">Daftar</button>
         </div>
 
         <!-- Form Masuk -->
         <div id="formLogin">
             <div class="mb-4">
-                <label>Email</label>
-                <input type="email" id="loginEmail" class="w-full p-2 border rounded mt-1" placeholder="email@anda.com">
+                <label class="font-medium text-gray-700">Email</label>
+                <input type="email" id="loginEmail" class="w-full p-3 border rounded-lg mt-1 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="email@anda.com">
             </div>
             <div class="mb-4">
-                <label>Kata Sandi</label>
-                <input type="password" id="loginPass" class="w-full p-2 border rounded mt-1" placeholder="******">
+                <label class="font-medium text-gray-700">Kata Sandi</label>
+                <input type="password" id="loginPass" class="w-full p-3 border rounded-lg mt-1 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Masukkan kata sandi">
             </div>
-            <button onclick="login()" class="w-full bg-blue-600 text-white py-2 rounded">Masuk</button>
+            <button onclick="login()" class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition">Masuk</button>
         </div>
 
         <!-- Form Daftar -->
         <div id="formDaftar" class="hidden">
             <div class="mb-4">
-                <label>Nama Lengkap</label>
-                <input type="text" id="regNama" class="w-full p-2 border rounded mt-1">
+                <label class="font-medium text-gray-700">Nama Lengkap</label>
+                <input type="text" id="regNama" class="w-full p-3 border rounded-lg mt-1 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Nama lengkap Anda">
             </div>
             <div class="mb-4">
-                <label>Email</label>
-                <input type="email" id="regEmail" class="w-full p-2 border rounded mt-1">
+                <label class="font-medium text-gray-700">Email</label>
+                <input type="email" id="regEmail" class="w-full p-3 border rounded-lg mt-1 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="email@anda.com">
             </div>
             <div class="mb-4">
-                <label>Kata Sandi</label>
-                <input type="password" id="regPass" class="w-full p-2 border rounded mt-1">
+                <label class="font-medium text-gray-700">Kata Sandi</label>
+                <input type="password" id="regPass" class="w-full p-3 border rounded-lg mt-1 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Minimal 6 karakter">
             </div>
-            <button onclick="daftar()" class="w-full bg-green-600 text-white py-2 rounded">Buat Akun</button>
+            <button onclick="daftar()" class="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition">Buat Akun</button>
         </div>
     </div>
 </div>
@@ -52,33 +56,35 @@
 <!-- Halaman Utama (Setelah Login) -->
 <div id="mainApp" class="hidden">
     <!-- Navbar -->
-    <nav class="bg-blue-700 text-white fixed w-full top-0 z-10 shadow">
+    <nav class="bg-blue-700 text-white fixed w-full top-0 z-50 shadow-lg">
         <div class="flex justify-around py-3">
-            <a href="#" class="nav-link active" data-target="beranda"><i class="fa fa-home"></i> Beranda</a>
-            <a href="#" class="nav-link" data-target="video"><i class="fa fa-video-camera"></i> Video</a>
-            <a href="#" class="nav-link" data-target="akun"><i class="fa fa-user"></i> Saya</a>
+            <a href="#" class="nav-link active flex flex-col items-center text-sm" data-target="beranda">
+                <i class="fa fa-home text-lg"></i> Beranda
+            </a>
+            <a href="#" class="nav-link flex flex-col items-center text-sm" data-target="video">
+                <i class="fa fa-video-camera text-lg"></i> Video
+            </a>
+            <a href="#" class="nav-link flex flex-col items-center text-sm" data-target="akun">
+                <i class="fa fa-user text-lg"></i> Saya
+            </a>
         </div>
     </nav>
 
     <!-- Konten Utama -->
-    <main class="pt-16 pb-10 px-4 max-w-6xl mx-auto">
+    <main class="pt-20 pb-24 px-4 max-w-6xl mx-auto">
 
         <!-- Halaman Beranda -->
         <section id="beranda" class="page-content">
-            <div class="flex gap-3 mb-6 overflow-x-auto">
-                <button class="beranda-tab active px-4 py-2 bg-blue-600 text-white rounded" data-target="semuaProduk">Semua Produk</button>
-                <button class="beranda-tab px-4 py-2 bg-gray-200 rounded" data-target="terlaris">Terlaris</button>
-                <button class="beranda-tab px-4 py-2 bg-gray-200 rounded" data-target="kategori">Kategori</button>
+            <div class="flex gap-3 mb-6 overflow-x-auto pb-2">
+                <button class="beranda-tab active px-4 py-2 bg-blue-600 text-white rounded-full whitespace-nowrap text-sm font-medium" data-target="semuaProduk">Semua Produk</button>
+                <button class="beranda-tab px-4 py-2 bg-gray-200 rounded-full whitespace-nowrap text-sm font-medium" data-target="terlaris">Terlaris</button>
+                <button class="beranda-tab px-4 py-2 bg-gray-200 rounded-full whitespace-nowrap text-sm font-medium" data-target="kategori">Kategori</button>
             </div>
 
             <!-- Semua Produk -->
-            <div id="semuaProduk" class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                <!-- Produk dimuat dari JS -->
-            </div>
-
+            <div id="semuaProduk" class="grid grid-cols-2 md:grid-cols-3 gap-4"></div>
             <!-- Terlaris -->
             <div id="terlaris" class="hidden grid grid-cols-2 md:grid-cols-3 gap-4"></div>
-
             <!-- Kategori -->
             <div id="kategori" class="hidden">
                 <div class="flex flex-wrap gap-3 mb-6" id="daftarKategori"></div>
@@ -88,59 +94,74 @@
 
         <!-- Halaman Video -->
         <section id="video" class="page-content hidden">
-            <h2 class="text-xl font-bold mb-4">Video Kami</h2>
-            <div class="mb-4 p-3 bg-white rounded shadow">
-                <label class="block mb-2">Tambah Video (Tautan/Link):</label>
-                <input type="text" id="linkVideo" class="w-full p-2 border rounded mb-2" placeholder="https://...">
-                <button onclick="tambahVideo()" class="bg-blue-500 text-white px-3 py-1 rounded">Tambah</button>
+            <h2 class="text-xl font-bold mb-4">Video Produk & Tutorial</h2>
+            <div class="mb-4 p-4 bg-white rounded-xl shadow">
+                <label class="block mb-2 font-medium">Tambah Video (Link YouTube/Embed):</label>
+                <input type="text" id="linkVideo" class="w-full p-3 border rounded-lg mb-3 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="https://www.youtube.com/embed/...">
+                <button onclick="tambahVideo()" class="bg-blue-500 text-white px-5 py-2 rounded-lg hover:bg-blue-600 transition">Tambah Video</button>
             </div>
             <div id="kontenVideo" class="space-y-4"></div>
         </section>
 
         <!-- Halaman Akun / Pengaturan -->
         <section id="akun" class="page-content hidden">
-            <div class="bg-white p-6 rounded-lg shadow">
-                <h2 class="text-xl font-bold mb-4">Profil Saya</h2>
-                <div class="grid gap-4">
+            <div class="bg-white p-6 rounded-xl shadow">
+                <h2 class="text-xl font-bold mb-5 flex items-center gap-2"><i class="fa fa-user-circle"></i> Profil Saya</h2>
+                <div class="space-y-4">
                     <div>
-                        <label>Email</label>
-                        <input type="email" id="setEmail" class="w-full p-2 border rounded">
+                        <label class="font-medium text-gray-700 block mb-1">Email</label>
+                        <input type="email" id="setEmail" class="w-full p-3 border rounded-lg bg-gray-50" readonly>
                     </div>
                     <div>
-                        <label>Nomor HP</label>
-                        <input type="tel" id="setHp" class="w-full p-2 border rounded">
+                        <label class="font-medium text-gray-700 block mb-1">Nomor HP</label>
+                        <input type="tel" id="setHp" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="0812xxxxxxxx">
                     </div>
                     <div>
-                        <label>Tanggal Lahir</label>
-                        <input type="date" id="setTglLahir" class="w-full p-2 border rounded">
+                        <label class="font-medium text-gray-700 block mb-1">Tanggal Lahir</label>
+                        <input type="date" id="setTglLahir" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
                     </div>
                     <div>
-                        <label>Alamat Lengkap</label>
-                        <textarea id="setAlamat" rows="3" class="w-full p-2 border rounded"></textarea>
+                        <label class="font-medium text-gray-700 block mb-1">Alamat Lengkap Pengiriman</label>
+                        <textarea id="setAlamat" rows="3" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Jalan, RT/RW, Kecamatan, Kabupaten, Provinsi, Kode Pos"></textarea>
                     </div>
-                    <button onclick="simpanProfil()" class="bg-green-600 text-white py-2 rounded">Simpan Perubahan</button>
-                    <button onclick="cekStatusPengiriman()" class="bg-gray-700 text-white py-2 rounded mt-2">Cek Status Pengiriman</button>
-                    <button onclick="keluar()" class="bg-red-500 text-white py-2 rounded mt-2">Keluar Akun</button>
+                    <button onclick="simpanProfil()" class="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition">Simpan Perubahan</button>
+                    <button onclick="cekStatusPengiriman()" class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition flex items-center justify-center gap-2">
+                        <i class="fa fa-truck"></i> Cek Status Pesanan
+                    </button>
+                    <button onclick="keluar()" class="w-full bg-red-500 text-white py-3 rounded-lg font-semibold hover:bg-red-600 transition mt-2">Keluar Akun</button>
                 </div>
             </div>
         </section>
 
         <!-- Halaman Pembayaran / Checkout -->
         <section id="checkoutPage" class="page-content hidden">
-            <div class="bg-white p-6 rounded-lg shadow max-w-xl mx-auto">
-                <h2 class="text-xl font-bold mb-4">Pembayaran & Pengiriman (J&T)</h2>
-                <p class="mb-3">Alamat Pengiriman: <span id="alamatKirim"></span></p>
-                <p class="mb-4">Total Bayar: <strong id="totalBayar">Rp 0</strong></p>
+            <div class="bg-white p-6 rounded-xl shadow max-w-xl mx-auto">
+                <h2 class="text-xl font-bold mb-5 flex items-center gap-2"><i class="fa fa-shopping-cart"></i> Pembayaran & Pengiriman</h2>
+                
+                <div class="mb-4 p-4 bg-gray-50 rounded-lg">
+                    <p class="font-medium text-gray-700 mb-1">Jasa Kirim:</p>
+                    <p class="font-semibold">J&T Ekspres</p>
+                </div>
 
-                <div class="mb-4">
-                    <label class="font-semibold">Metode Pembayaran:</label>
-                    <select id="metodeBayar" class="w-full p-2 border rounded mt-2">
+                <div class="mb-4 p-4 bg-gray-50 rounded-lg">
+                    <p class="font-medium text-gray-700 mb-1">Alamat Pengiriman:</p>
+                    <p id="alamatKirim" class="text-gray-800">-</p>
+                </div>
+
+                <div class="mb-5 p-4 bg-green-50 rounded-lg border border-green-200">
+                    <p class="font-medium text-gray-700 mb-1">Total Bayar:</p>
+                    <p class="text-2xl font-bold text-green-700" id="totalBayar">Rp 0</p>
+                </div>
+
+                <div class="mb-6">
+                    <label class="font-medium text-gray-700 block mb-2">Metode Pembayaran:</label>
+                    <select id="metodeBayar" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
                         <option value="cod">Bayar di Tempat (COD)</option>
-                        <option value="ewallet">Dompet Digital / E-Wallet</option>
+                        <option value="ewallet">Dompet Digital (QRIS/OVO/DANA/Gopay)</option>
                     </select>
                 </div>
 
-                <button onclick="prosesPembayaran()" class="w-full bg-blue-600 text-white py-3 rounded font-bold">Proses Pesanan</button>
+                <button onclick="prosesPembayaran()" class="w-full bg-orange-600 text-white py-3 rounded-lg font-bold text-lg hover:bg-orange-700 transition">Konfirmasi Pesanan</button>
             </div>
         </section>
     </main>
@@ -151,19 +172,30 @@
 let penggunaAktif = null;
 let dataPengguna = JSON.parse(localStorage.getItem("dataPengguna")) || [];
 let dataProduk = [
-    {id:1,nama:"Kaos Polos",harga:45000,kategori:"Pakaian",terlaris:true},
-    {id:2,nama:"Celana Jeans",harga:120000,kategori:"Pakaian",terlaris:true},
-    {id:3,nama:"Topi",harga:35000,kategori:"Aksesoris",terlaris:false},
-    {id:4,nama:"Tas Ransel",harga:89000,kategori:"Aksesoris",terlaris:true},
-    {id:5,nama:"Sepatu Kets",harga:180000,kategori:"Alas Kaki",terlaris:false}
+    {id:1,nama:"Kaos Polos Premium",harga:45000,kategori:"Pakaian",terlaris:true},
+    {id:2,nama:"Celana Jeans Pria",harga:120000,kategori:"Pakaian",terlaris:true},
+    {id:3,nama:"Topi Trucker",harga:35000,kategori:"Aksesoris",terlaris:false},
+    {id:4,nama:"Tas Ransel Sekolah",harga:89000,kategori:"Aksesoris",terlaris:true},
+    {id:5,nama:"Sepatu Kets Putih",harga:180000,kategori:"Alas Kaki",terlaris:false},
+    {id:6,nama:"Kabel Data Type-C",harga:25000,kategori:"Elektronik",terlaris:true}
 ];
 let daftarVideo = JSON.parse(localStorage.getItem("daftarVideo")) || [];
 let riwayatPesanan = JSON.parse(localStorage.getItem("riwayatPesanan")) || [];
 
-// === NAVIGASI & ANTARMUKA ===
+// === 🔴 FITUR TETAP LOGIN OTOMATIS ===
+window.onload = function(){
+    const akunTersimpan = localStorage.getItem("penggunaAktif");
+    if(akunTersimpan){
+        penggunaAktif = JSON.parse(akunTersimpan);
+        tampilkanHalamanUtama();
+        isiDataProfil();
+    }
+};
+
+// === NAVIGASI ===
 function switchTab(jenis){
-    document.querySelectorAll(".tab-btn").forEach(el=>el.classList.remove("active","bg-blue-100"));
-    event.target.classList.add("active","bg-blue-100");
+    document.querySelectorAll(".tab-btn").forEach(el=>el.classList.remove("active","text-blue-600","border-b-2","border-blue-600"));
+    event.target.classList.add("active","text-blue-600","border-b-2","border-blue-600");
     document.getElementById("formLogin").classList.toggle("hidden",jenis!=="login");
     document.getElementById("formDaftar").classList.toggle("hidden",jenis!=="daftar");
 }
@@ -171,8 +203,8 @@ function switchTab(jenis){
 document.querySelectorAll(".nav-link").forEach(link=>{
     link.addEventListener("click",e=>{
         e.preventDefault();
-        document.querySelectorAll(".nav-link").forEach(l=>l.classList.remove("active","underline"));
-        link.classList.add("active","underline");
+        document.querySelectorAll(".nav-link").forEach(l=>l.classList.remove("active","text-yellow-300"));
+        link.classList.add("active","text-yellow-300");
         document.querySelectorAll(".page-content").forEach(p=>p.classList.add("hidden"));
         document.getElementById(link.dataset.target).classList.remove("hidden");
     });
@@ -180,8 +212,8 @@ document.querySelectorAll(".nav-link").forEach(link=>{
 
 document.querySelectorAll(".beranda-tab").forEach(btn=>{
     btn.addEventListener("click",()=>{
-        document.querySelectorAll(".beranda-tab").forEach(b=>b.classList.replace("bg-blue-600","bg-gray-200"));
-        btn.classList.replace("bg-gray-200","bg-blue-600");
+        document.querySelectorAll(".beranda-tab").forEach(b=>b.classList.replace("bg-blue-600","bg-gray-200").classList.replace("text-white","text-gray-700"));
+        btn.classList.replace("bg-gray-200","bg-blue-600").classList.replace("text-gray-700","text-white");
         document.querySelectorAll("#beranda > div").forEach(d=>d.classList.add("hidden"));
         document.getElementById(btn.dataset.target).classList.remove("hidden");
     });
@@ -189,39 +221,51 @@ document.querySelectorAll(".beranda-tab").forEach(btn=>{
 
 // === FUNGSI AKUN ===
 function daftar(){
-    const data = {
-        nama:regNama.value, email:regEmail.value, sandi:regPass.value,
-        hp:"", tglLahir:"", alamat:""
-    };
-    if(!data.nama||!data.email||!data.sandi) return alert("Lengkapi data!");
-    dataPengguna.push(data); simpanData(); alert("Daftar berhasil! Silakan masuk.");
+    const data = {nama:regNama.value.trim(), email:regEmail.value.trim(), sandi:regPass.value, hp:"", tglLahir:"", alamat:""};
+    if(!data.nama||!data.email||!data.sandi) return alert("Lengkapi semua data terlebih dahulu!");
+    if(data.sandi.length < 6) return alert("Kata sandi minimal 6 karakter!");
+    if(dataPengguna.find(d=>d.email===data.email)) return alert("Email sudah terdaftar, silakan masuk!");
+    dataPengguna.push(data); simpanData(); alert("✅ Pendaftaran berhasil! Silakan masuk.");
 }
+
 function login(){
-    const akun = dataPengguna.find(d=>d.email===loginEmail.value&&d.sandi===loginPass.value);
-    if(!akun) return alert("Email atau kata sandi salah!");
-    penggunaAktif = akun; tampilkanHalamanUtama(); isiDataProfil();
+    const akun = dataPengguna.find(d=>d.email===loginEmail.value.trim()&&d.sandi===loginPass.value);
+    if(!akun) return alert("❌ Email atau kata sandi salah!");
+    penggunaAktif = akun;
+    localStorage.setItem("penggunaAktif", JSON.stringify(penggunaAktif));
+    tampilkanHalamanUtama(); isiDataProfil();
 }
-function keluar(){ penggunaAktif=null; location.reload(); }
+
+function keluar(){
+    localStorage.removeItem("penggunaAktif");
+    penggunaAktif = null;
+    location.reload();
+}
+
 function tampilkanHalamanUtama(){ authPage.classList.add("hidden"); mainApp.classList.remove("hidden"); muatProduk(); muatKategori(); muatVideo(); }
 function isiDataProfil(){
     setEmail.value = penggunaAktif.email; setHp.value = penggunaAktif.hp||"";
     setTglLahir.value = penggunaAktif.tglLahir||""; setAlamat.value = penggunaAktif.alamat||"";
 }
 function simpanProfil(){
-    Object.assign(penggunaAktif, {hp:setHp.value,tglLahir:setTglLahir.value,alamat:setAlamat.value});
-    simpanData(); alert("Profil tersimpan!");
+    Object.assign(penggunaAktif, {hp:setHp.value.trim(),tglLahir:setTglLahir.value,alamat:setAlamat.value.trim()});
+    const indeks = dataPengguna.findIndex(d=>d.email===penggunaAktif.email);
+    dataPengguna[indeks] = penggunaAktif;
+    localStorage.setItem("penggunaAktif", JSON.stringify(penggunaAktif));
+    simpanData(); alert("✅ Profil berhasil diperbarui!");
 }
 
 // === PRODUK & KATEGORI ===
 function muatProduk(){
     const tampil = (arr,idTujuan)=>{
         idTujuan.innerHTML = "";
+        if(arr.length===0) {idTujuan.innerHTML="<p class='col-span-full text-center text-gray-500'>Belum ada produk.</p>"; return;}
         arr.forEach(p=>{
             idTujuan.innerHTML += `
-            <div class="bg-white p-3 rounded shadow">
-                <h3 class="font-bold">${p.nama}</h3>
-                <p class="text-green-600">Rp ${p.harga.toLocaleString()}</p>
-                <button onclick="beliProduk(${p.harga})" class="w-full mt-2 bg-orange-500 text-white py-1 rounded">Beli Sekarang</button>
+            <div class="bg-white p-4 rounded-xl shadow hover:shadow-md transition">
+                <h3 class="font-bold text-gray-800 mb-1">${p.nama}</h3>
+                <p class="text-green-600 font-bold text-lg mb-3">Rp ${p.harga.toLocaleString()}</p>
+                <button onclick="beliProduk(${p.harga})" class="w-full bg-orange-500 text-white py-2 rounded-lg text-sm font-medium hover:bg-orange-600 transition">Beli Sekarang</button>
             </div>`;
         });
     };
@@ -232,13 +276,16 @@ function muatKategori(){
     daftarKategori.innerHTML = "";
     daftar.forEach(k=>{
         const btn = document.createElement("button");
-        btn.className="px-3 py-2 bg-gray-300 rounded hover:bg-blue-500 hover:text-white";
+        btn.className="px-4 py-2 bg-gray-200 rounded-lg text-sm font-medium hover:bg-blue-500 hover:text-white transition";
         btn.textContent=k; btn.onclick=()=>{
+            document.querySelectorAll(".beranda-tab").forEach(b=>b.classList.replace("bg-blue-600","bg-gray-200").classList.replace("text-white","text-gray-700"));
+            kategori.classList.remove("hidden");
             produkKategori.innerHTML="";
             dataProduk.filter(p=>p.kategori===k).forEach(p=>produkKategori.innerHTML+=`
-            <div class="bg-white p-3 rounded shadow">
-                <h3 class="font-bold">${p.nama}</h3><p class="text-green-600">Rp ${p.harga.toLocaleString()}</p>
-                <button onclick="beliProduk(${p.harga})" class="w-full mt-2 bg-orange-500 text-white py-1 rounded">Beli Sekarang</button>
+            <div class="bg-white p-4 rounded-xl shadow">
+                <h3 class="font-bold mb-1">${p.nama}</h3>
+                <p class="text-green-600 font-bold mb-3">Rp ${p.harga.toLocaleString()}</p>
+                <button onclick="beliProduk(${p.harga})" class="w-full bg-orange-500 text-white py-2 rounded-lg text-sm hover:bg-orange-600">Beli Sekarang</button>
             </div>`);
         };
         daftarKategori.appendChild(btn);
@@ -247,49 +294,63 @@ function muatKategori(){
 
 // === VIDEO ===
 function tambahVideo(){
-    if(!linkVideo.value) return; daftarVideo.push(linkVideo.value); simpanData(); muatVideo(); linkVideo.value="";
+    const link = linkVideo.value.trim();
+    if(!link) return alert("Masukkan tautan video terlebih dahulu!");
+    daftarVideo.push(link); simpanData(); muatVideo(); linkVideo.value="";
+    alert("✅ Video berhasil ditambahkan!");
 }
 function muatVideo(){
     kontenVideo.innerHTML="";
+    if(daftarVideo.length===0) {kontenVideo.innerHTML="<p class='text-gray-500 text-center py-8'>Belum ada video yang ditampilkan.</p>"; return;}
     daftarVideo.forEach((l,i)=>{
         kontenVideo.innerHTML += `
-        <div class="bg-white p-3 rounded shadow">
-            <iframe width="100%" height="200" src="${l}" frameborder="0" allowfullscreen></iframe>
+        <div class="bg-white p-4 rounded-xl shadow">
+            <iframe width="100%" height="240" src="${l}" frameborder="0" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope"></iframe>
         </div>`;
     });
 }
 
-// === PEMBAYARAN & PENGIRIMAN (J&T TERINTEGRASI) ===
+// === PEMBAYARAN & PENGIRIMAN ===
 function beliProduk(harga){
-    if(!penggunaAktif.alamat) return alert("Lengkapi alamat dulu di menu 'Saya'!");
+    if(!penggunaAktif.alamat) return alert("⚠️ Lengkapi alamat pengiriman dulu di menu 'Saya'!");
     totalBayar.innerText = "Rp " + harga.toLocaleString();
-    alamatKirim.innerText = penggunaAktif.alamat + " | Layanan Pengiriman: J&T Ekspres";
+    alamatKirim.innerText = penggunaAktif.alamat;
     document.querySelectorAll(".page-content").forEach(p=>p.classList.add("hidden"));
     checkoutPage.classList.remove("hidden"); checkoutPage.dataset.harga = harga;
 }
 function prosesPembayaran(){
     const metode = metodeBayar.value;
     const total = parseInt(checkoutPage.dataset.harga);
-    const status = metode==="ewallet" ? "✅ Lunas Otomatis - J&T Sedang Memproses" : "⏳ Menunggu Pembayaran / COD";
+    let statusAwal = metode==="ewallet" ? "✅ Lunas Otomatis - Menunggu Konfirmasi Toko" : "⏳ Menunggu Konfirmasi Toko (COD)";
 
-    // Simpan ke riwayat & dikirim ke basis data pusat
     const pesanan = {
         id:Date.now(), pembeli:penggunaAktif.email, alamat:penggunaAktif.alamat,
-        total, metode, status, kurir:"J&T Ekspres", tanggal:new Date().toLocaleString()
+        total, metode, status:statusAwal, kurir:"J&T Ekspres", tanggal:new Date().toLocaleString()
     };
     riwayatPesanan.push(pesanan); simpanData();
 
-    alert(metode==="ewallet" ? "✅ Pembayaran berhasil! Dialihkan ke beranda..." : "✅ Pesanan tercatat!");
-    // Kembali ke beranda
+    alert(metode==="ewallet" ? "✅ Pembayaran Berhasil! Pesanan sedang diproses." : "✅ Pesanan tercatat dengan metode COD.");
     document.querySelectorAll(".page-content").forEach(p=>p.classList.add("hidden"));
     beranda.classList.remove("hidden");
 }
+
+// === CEK STATUS PESANAN ===
 function cekStatusPengiriman(){
     const milikSaya = riwayatPesanan.filter(p=>p.pembeli===penggunaAktif.email);
-    if(!milikSaya.length) return alert("Belum ada riwayat pesanan.");
-    let teks = "📦 RIWAYAT PENGIRIMAN:\n";
-    milikSaya.forEach(p=>teks+=`\nID:${p.id} | Total:Rp${p.total.toLocaleString()}\nStatus:${p.status}\nKurir:${p.kurir}\nAlamat:${p.alamat}\n---`);
-    alert(teks);
+    if(!milikSaya.length) return alert("📦 Belum ada riwayat pesanan Anda.");
+
+    let isi = "📦 === STATUS PESANAN ANDA ===\n\n";
+    milikSaya.forEach((ps, no)=>{
+        isi += `📝 Pesanan ke-${no+1}\n`;
+        isi += `🕒 Tanggal: ${ps.tanggal}\n`;
+        isi += `💰 Total: Rp ${ps.total.toLocaleString()}\n`;
+        isi += `💳 Metode: ${ps.metode.toUpperCase()}\n`;
+        isi += `🚚 Kurir: ${ps.kurir}\n`;
+        isi += `📍 Alamat: ${ps.alamat}\n`;
+        isi += `📊 STATUS TERBARU:\n   ${ps.status}\n`;
+        isi += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+    });
+    alert(isi);
 }
 
 // === PENYIMPANAN DATA ===
