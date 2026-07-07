@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Pengelolaan Toko</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-6 max-w-6xl mx-auto">
+    <h1 class="text-2xl font-bold text-center mb-6 bg-blue-700 text-white py-3 rounded">📊 PANEL PUSAT DATA TOKO</h1>
+
+    <!-- Data Pelanggan -->
+    <div class="bg-white p-5 rounded-lg shadow mb-6">
+        <h2 class="font-bold text-lg mb-3">👥 Data Seluruh Pelanggan</h2>
+        <div id="daftarPelanggan" class="overflow-x-auto"></div>
+    </div>
+
+    <!-- Data Pesanan & Pembayaran -->
+    <div class="bg-white p-5 rounded-lg shadow">
+        <h2 class="font-bold text-lg mb-3">🛒 Daftar Pesanan & Status Pembayaran</h2>
+        <div id="daftarPesanan" class="overflow-x-auto"></div>
+    </div>
+
+<script>
+function muatData(){
+    const pengguna = JSON.parse(localStorage.getItem("dataPengguna")) || [];
+    const pesanan = JSON.parse(localStorage.getItem("riwayatPesanan")) || [];
+
+    // Tampilkan Pelanggan
+    daftarPelanggan.innerHTML = `
+    <table class="w-full text-sm text-left">
+        <thead class="bg-gray-200"><tr><th class="p-2">Nama</th><th class="p-2">Email</th><th class="p-2">No. HP</th><th class="p-2">Alamat Lengkap</th></tr></thead><tbody>
+        ${pengguna.map(p=>`<tr class="border-b"><td class="p-2">${p.nama||"-"}</td><td class="p-2">${p.email}</td><td class="p-2">${p.hp||"-"}</td><td class="p-2">${p.alamat||"-"}</td></tr>`).join("")}
+        </tbody></table>`;
+
+    // Tampilkan Pesanan
+    daftarPesanan.innerHTML = `
+    <table class="w-full text-sm text-left">
+        <thead class="bg-gray-200"><tr><th class="p-2">Tanggal</th><th class="p-2">Pembeli</th><th class="p-2">Total Bayar</th><th class="p-2">Metode</th><th class="p-2">Kurir</th><th class="p-2">Alamat Tujuan</th><th class="p-2">Status</th></tr></thead><tbody>
+        ${pesanan.map(ps=>`<tr class="border-b"><td class="p-2">${ps.tanggal}</td><td class="p-2">${ps.pembeli}</td><td class="p-2">Rp ${ps.total.toLocaleString()}</td><td class="p-2">${ps.metode.toUpperCase()}</td><td class="p-2">${ps.kurir}</td><td class="p-2">${ps.alamat}</td><td class="p-2 font-semibold">${ps.status}</td></tr>`).join("")}
+        </tbody></table>`;
+}
+muatData();
+setInterval(muatData, 3000); // Segarkan data otomatis
+</script>
+</body>
+</html>
